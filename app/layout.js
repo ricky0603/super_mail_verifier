@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import { RootProvider } from "fumadocs-ui/provider/next";
 import { getSEOTags } from "@/libs/seo";
 import ClientLayout from "@/components/LayoutClient";
 import config from "@/config";
@@ -24,9 +25,11 @@ export default function RootLayout({ children }) {
 			data-theme={config.colors.theme}
 			className={font.className}
 		>
-			<body>
-				{/* ClientLayout contains all the client wrappers (Crisp chat support, toast messages, tooltips, etc.) */}
-				<ClientLayout>{children}</ClientLayout>
+			<body className="flex min-h-screen flex-col">
+				<RootProvider>
+					{/* ClientLayout contains all the client wrappers (Crisp chat support, toast messages, tooltips, etc.) */}
+					<ClientLayout>{children}</ClientLayout>
+				</RootProvider>
 			</body>
 		</html>
 	);

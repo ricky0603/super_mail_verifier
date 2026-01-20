@@ -1,4 +1,5 @@
-import { categories, articles } from "./_assets/content";
+import { categories } from "./_assets/meta";
+import { getBlogArticles } from "@/lib/blog";
 import CardArticle from "./_assets/components/CardArticle";
 import CardCategory from "./_assets/components/CardCategory";
 import config from "@/config";
@@ -12,6 +13,7 @@ export const metadata = getSEOTags({
 });
 
 export default async function Blog() {
+  const articles = getBlogArticles();
   const articlesToDisplay = articles
     .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
     .slice(0, 6);

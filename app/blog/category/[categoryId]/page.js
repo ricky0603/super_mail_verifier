@@ -1,13 +1,19 @@
-import { categories, articles } from "../../_assets/content";
+import { categories } from "../../_assets/meta";
+import { getBlogArticles } from "@/lib/blog";
 import CardArticle from "../../_assets/components/CardArticle";
 import CardCategory from "../../_assets/components/CardCategory";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
   const category = categories.find(
     (category) => category.slug === params.categoryId
   );
+
+  if (!category) {
+    return getSEOTags();
+  }
 
   return getSEOTags({
     title: `${category.title} | Blog by ${config.appName}`,
@@ -20,6 +26,10 @@ export default async function Category({ params }) {
   const category = categories.find(
     (category) => category.slug === params.categoryId
   );
+  if (!category) {
+    notFound();
+  }
+  const articles = getBlogArticles();
   const articlesInCategory = articles
     .filter((article) =>
       article.categories.map((c) => c.slug).includes(category.slug)

@@ -1,4 +1,7 @@
-const nextConfig = {
+import { createMDX } from "fumadocs-mdx/next";
+
+/** @type {import('next').NextConfig} */
+const config = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
@@ -28,29 +31,34 @@ const nextConfig = {
       },
     },
   },
-  webpack: (config, { webpack, isServer }) => {
+  webpack: (webpackConfig) => {
     // Suppress specific warnings from Supabase realtime-js and Edge Runtime compatibility
-    config.ignoreWarnings = [
+    webpackConfig.ignoreWarnings = [
       {
-        module: /node_modules\/@supabase\/realtime-js/,
-        message: /Critical dependency: the request of a dependency is an expression/,
+        module: /node_modules\/\@supabase\/realtime-js/,
+        message:
+          /Critical dependency: the request of a dependency is an expression/,
       },
       {
-        module: /node_modules\/@supabase\/realtime-js/,
+        module: /node_modules\/\@supabase\/realtime-js/,
         message: /A Node\.js API is used \(process\.versions/,
       },
       {
-        module: /node_modules\/@supabase\/realtime-js/,
+        module: /node_modules\/\@supabase\/realtime-js/,
         message: /A Node\.js API is used \(process\.version/,
       },
       {
-        module: /node_modules\/@supabase\/supabase-js/,
+        module: /node_modules\/\@supabase\/supabase-js/,
         message: /A Node\.js API is used \(process\.version/,
       },
     ];
 
-    return config;
+    return webpackConfig;
   },
 };
 
-module.exports = nextConfig;
+const withMDX = createMDX({
+  // configPath: "source.config.ts",
+});
+
+export default withMDX(config);

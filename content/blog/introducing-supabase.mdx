@@ -1,0 +1,37 @@
+---
+title: "Introducing Supabase to ShipFast"
+description: "Supabase is an open-source Firebase alternative. It's a great tool for building a backend for your app. It's now integrated with ShipFast!"
+author: "marc"
+date: "2023-11-20"
+categories: ["feature"]
+image: "/blog/introducing-supabase/header.png"
+imageAlt: "Supabase and ShipFast logo combined"
+---
+
+![Supabase and ShipFast logo combined](/blog/introducing-supabase/header.png)
+
+## Introduction
+
+Supabase is an open-source Firebase alternative. It's a great tool for building a backend for your app. It's now integrated with ShipFast!
+
+## 1. Create a Supabase account
+
+First, go to [Supabase](https://supabase.com/) and create an account. It's free for up to 10,000 rows per table. Then create a new project and a new table. You can use the following SQL schema:
+
+```sql
+CREATE TABLE public.users (
+  id bigint NOT NULL DEFAULT nextval('users_id_seq'::regclass),
+  email text NOT NULL,
+  password text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT users_pkey PRIMARY KEY (id)
+);
+```
+
+## 2. Add your credentials to ShipFast
+
+Copy the `API URL` and `API Key` from your Supabase project settings and add them to your ShipFast project settings. Add these files to your project:
+
+- `.env.local`
+- `.env.production`

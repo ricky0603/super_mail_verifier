@@ -11,14 +11,20 @@ const Avatar = ({ article }) => {
       rel="author"
     >
       <span itemProp="author">
-        <Image
-          src={article.author.avatar}
-          // alt={`Avatar of ${article.author.name}`}
-          alt=""
-          className="w-7 h-7 rounded-full object-cover object-center"
-          width={28}
-          height={28}
-        />
+        {article.author.avatar ? (
+          <Image
+            src={article.author.avatar}
+            // alt={`Avatar of ${article.author.name}`}
+            alt=""
+            className="w-7 h-7 rounded-full object-cover object-center"
+            width={28}
+            height={28}
+          />
+        ) : (
+          <span className="w-7 h-7 rounded-full bg-base-200 flex items-center justify-center text-xs uppercase">
+            {article.author.name?.slice(0, 1) || "?"}
+          </span>
+        )}
       </span>
       <span className="group-hover:underline">{article.author.name}</span>
     </Link>

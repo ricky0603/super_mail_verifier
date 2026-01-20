@@ -1,11 +1,17 @@
 import Image from "next/image";
-import { authors, articles } from "../../_assets/content";
+import { authors } from "../../_assets/meta";
+import { getBlogArticles } from "@/lib/blog";
 import CardArticle from "../../_assets/components/CardArticle";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
   const author = authors.find((author) => author.slug === params.authorId);
+
+  if (!author) {
+    return getSEOTags();
+  }
 
   return getSEOTags({
     title: `${author.name}, Author at ${config.appName}'s Blog`,
@@ -16,6 +22,10 @@ export async function generateMetadata({ params }) {
 
 export default async function Author({ params }) {
   const author = authors.find((author) => author.slug === params.authorId);
+  if (!author) {
+    notFound();
+  }
+  const articles = getBlogArticles();
   const articlesByAuthor = articles
     .filter((article) => article.author.slug === author.slug)
     .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));

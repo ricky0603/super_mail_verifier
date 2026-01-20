@@ -1,13 +1,25 @@
 import Link from "next/link";
 import Script from "next/script";
-import { articles } from "../_assets/content";
+import defaultMdxComponents from "fumadocs-ui/mdx";
+import { notFound } from "next/navigation";
+import { getBlogArticleBySlug, getBlogArticles } from "@/lib/blog";
 import BadgeCategory from "../_assets/components/BadgeCategory";
 import Avatar from "../_assets/components/Avatar";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
+export function generateStaticParams() {
+  return getBlogArticles().map((article) => ({
+    articleId: article.slug,
+  }));
+}
+
 export async function generateMetadata({ params }) {
-  const article = articles.find((article) => article.slug === params.articleId);
+  const article = getBlogArticleBySlug(params.articleId);
+
+  if (!article) {
+    return getSEOTags();
+  }
 
   return getSEOTags({
     title: article.title,
@@ -18,13 +30,15 @@ export async function generateMetadata({ params }) {
         title: article.title,
         description: article.description,
         url: `/blog/${article.slug}`,
-        images: [
-          {
-            url: article.image.urlRelative,
-            width: 1200,
-            height: 660,
-          },
-        ],
+        images: article.image?.urlRelative
+          ? [
+              {
+                url: article.image.urlRelative,
+                width: 1200,
+                height: 660,
+              },
+            ]
+          : [],
         locale: "en_US",
         type: "website",
       },
@@ -33,8 +47,12 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function Article({ params }) {
-  const article = articles.find((article) => article.slug === params.articleId);
-  const articlesRelated = articles
+  const article = getBlogArticleBySlug(params.articleId);
+  if (!article) {
+    notFound();
+  }
+
+  const articlesRelated = getBlogArticles()
     .filter(
       (a) =>
         a.slug !== params.articleId &&
@@ -44,6 +62,7 @@ export default async function Article({ params }) {
     )
     .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
     .slice(0, 3);
+  const MdxContent = article.body;
 
   return (
     <>
@@ -62,7 +81,9 @@ export default async function Article({ params }) {
             name: article.title,
             headline: article.title,
             description: article.description,
-            image: `https://${config.domainName}${article.image.urlRelative}`,
+            image: article.image?.urlRelative
+              ? `https://${config.domainName}${article.image.urlRelative}`
+              : undefined,
             datePublished: article.publishedAt,
             dateModified: article.publishedAt,
             author: {
@@ -139,20 +160,20 @@ export default async function Article({ params }) {
                   Related reading
                 </p>
                 <div className="space-y-2 md:space-y-5">
-                  {articlesRelated.map((article) => (
-                    <div className="" key={article.slug}>
+                  {articlesRelated.map((relatedArticle) => (
+                    <div className="" key={relatedArticle.slug}>
                       <p className="mb-0.5">
                         <Link
-                          href={`/blog/${article.slug}`}
+                          href={`/blog/${relatedArticle.slug}`}
                           className="link link-hover hover:link-primary font-medium"
-                          title={article.title}
+                          title={relatedArticle.title}
                           rel="bookmark"
                         >
-                          {article.title}
+                          {relatedArticle.title}
                         </Link>
                       </p>
                       <p className="text-base-content/80 max-w-full text-sm">
-                        {article.description}
+                        {relatedArticle.description}
                       </p>
                     </div>
                   ))}
@@ -163,7 +184,9 @@ export default async function Article({ params }) {
 
           {/* ARTICLE CONTENT */}
           <section className="w-full max-md:pt-4 md:pr-20 space-y-12 md:space-y-20">
-            {article.content}
+            <div className="prose max-w-none">
+              <MdxContent components={defaultMdxComponents} />
+            </div>
           </section>
         </div>
       </article>
