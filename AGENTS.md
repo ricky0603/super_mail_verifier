@@ -23,6 +23,7 @@
 ## Testing Guidelines
 - No dedicated test framework is configured in this repo.
 - Use `npm run lint` for baseline checks. If adding tests, document how to run them in this file.
+- Doc-only changes (`*.md` only): no need to run `npm run lint`.
 
 ## Commit & Pull Request Guidelines
 - Recent history uses conventional prefixes such as `feat:`, `fix:`, `style:`; some commits include emojis. Prefer `type: short summary` (lowercase, imperative).
@@ -61,6 +62,7 @@ This repo implements Module 1: the SaaS website and dashboard for a real-email v
 
 ## Testing Guidelines
 - No automated tests configured. If adding tests, use `*.test.js` and document how to run them.
+- 仅更新文档（只改 `*.md`）：不要求运行 `npm run lint`。
 
 ## Commit & Pull Request Guidelines
 - Use Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `style:`), optional scopes (e.g., `refactor(core): ...`).
@@ -68,6 +70,7 @@ This repo implements Module 1: the SaaS website and dashboard for a real-email v
 
 ## Configuration & Secrets
 - Integrations live in `libs/` (MongoDB, Auth, Stripe, Resend). Document any new env vars in PRs.
+- 数据库表默认开启 Row Level Security（RLS）。通过 Supabase 读写数据时必须注意权限策略：通常需要 `authenticated` 会话，并且插入/更新需要满足 `auth.uid()` 归属校验（例如 Job 记录的 `user_id` 必须与当前登录用户一致）。
 
 # 开发指南
 
@@ -186,6 +189,8 @@ This repo implements Module 1: the SaaS website and dashboard for a real-email v
   - 自我审查更改
   - 确保提交消息解释"为什么"
 
+> 例外：如果本次改动仅涉及文档（只改 `*.md` 文件），可以不运行 `npm run lint`。
+
 ### 错误处理
 
 - 快速失败并提供描述性消息
@@ -301,3 +306,4 @@ This repo implements Module 1: the SaaS website and dashboard for a real-email v
 - 从根本原因修复编译错误
 - 在修复前理解错误发生的原因
 - 确保实现完整且功能正常
+- 产品内的提示和文案都用英文来写

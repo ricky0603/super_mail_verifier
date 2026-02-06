@@ -24,6 +24,7 @@ export default function RootLayout({ children }) {
 			lang="en"
 			data-theme={config.colors.theme}
 			className={font.className}
+			suppressHydrationWarning
 		>
 			<body className="flex min-h-screen flex-col">
 				<RootProvider>

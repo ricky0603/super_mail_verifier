@@ -65,20 +65,21 @@ const CrispChat = () => {
 // 3. Tooltip: Show tooltips if any JSX elements has these 2 attributes: data-tooltip-id="tooltip" data-tooltip-content=""
 // 4. CrispChat: Set Crisp customer chat support (see above)
 const ClientLayout = ({ children }) => {
-  return (
-    <>
-      {/* Show a progress bar at the top when navigating between pages */}
-      <NextTopLoader color={config.colors.main} showSpinner={false} />
+	return (
+		<>
+			{/* Show a progress bar at the top when navigating between pages */}
+			<NextTopLoader color={config.colors.main} showSpinner={false} />
 
       {/* Content inside app/page.js files  */}
       {children}
 
-      {/* Show Success/Error messages anywhere from the app with toast() */}
-      <Toaster
-        toastOptions={{
-          duration: 3000,
-        }}
-      />
+			{/* Show Success/Error messages anywhere from the app with toast() */}
+			<Toaster
+				containerStyle={{ zIndex: 99999 }}
+				toastOptions={{
+					duration: 3000,
+				}}
+			/>
 
       {/* Show tooltips if any JSX elements has these 2 attributes: data-tooltip-id="tooltip" data-tooltip-content="" */}
       <Tooltip

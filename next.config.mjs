@@ -1,8 +1,13 @@
 import { createMDX } from "fumadocs-mdx/next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
+  outputFileTracingRoot: __dirname,
   images: {
     remotePatterns: [
       {
@@ -24,6 +29,9 @@ const config = {
     ],
   },
   turbopack: {
+    // Avoid incorrect workspace root inference (e.g. when a parent directory has another lockfile).
+    // This also ensures fumadocs-mdx can find `source.config.ts` and generate its virtual modules.
+    root: __dirname,
     rules: {
       "*.svg": {
         loaders: ["@svgr/webpack"],
@@ -58,7 +66,7 @@ const config = {
 };
 
 const withMDX = createMDX({
-  // configPath: "source.config.ts",
+  configPath: "source.config.ts",
 });
 
 export default withMDX(config);
