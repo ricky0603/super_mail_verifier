@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
 import toast from "react-hot-toast";
 import { createClient } from "@/libs/supabase/client";
+import { useRouter } from "next/navigation";
 
 const STORAGE_BUCKET = "email_list_sourcefile";
 const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
@@ -132,9 +133,11 @@ const buildColumnNames = ({ previewRows, hasHeader }) => {
   return names;
 };
 
-export default function ValidateAddNewListModal() {
-  const dialogRef = useRef(null);
+export default function ValidateAddNewListModal({
+  buttonLabel = "Add New List",
+}) {
   const fileInputRef = useRef(null);
+  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const previewScrollRef = useRef(null);
   const headerCellRefs = useRef([]);
@@ -142,6 +145,7 @@ export default function ValidateAddNewListModal() {
   const preservedScrollLeftRef = useRef(null);
   const didInitSelectionRef = useRef(false);
 
+  const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [file, setFile] = useState(null);
   const [isParsingPreview, setIsParsingPreview] = useState(false);
@@ -151,7 +155,24 @@ export default function ValidateAddNewListModal() {
   const [selectedColumnIndex, setSelectedColumnIndex] = useState(0);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPreparingPurchase, setIsPreparingPurchase] = useState(false);
   const [progress, setProgress] = useState({ phase: "", pct: 0 });
+
+  const [requiredCredits, setRequiredCredits] = useState(0);
+  const [uniqueEmailList, setUniqueEmailList] = useState([]);
+  const [balance, setBalance] = useState({
+    totalCredit: 0,
+    usedCredit: 0,
+    availableCredit: 0,
+    subExpiredAt: null,
+    isSubscriptionActive: false,
+  });
+  const [topupQuote, setTopupQuote] = useState({
+    unitPriceUsd: null,
+    totalPriceUsd: null,
+    currency: "usd",
+  });
+  const [isCreatingTopupCheckout, setIsCreatingTopupCheckout] = useState(false);
 
   const removeFile = () => {
     setFile(null);
@@ -159,6 +180,9 @@ export default function ValidateAddNewListModal() {
     setColumnNames([]);
     setSelectedColumnIndex(0);
     setStep(1);
+    setRequiredCredits(0);
+    setUniqueEmailList([]);
+    setTopupQuote({ unitPriceUsd: null, totalPriceUsd: null, currency: "usd" });
     lastScrolledColumnRef.current = null;
     preservedScrollLeftRef.current = null;
     didInitSelectionRef.current = false;
@@ -166,6 +190,27 @@ export default function ValidateAddNewListModal() {
       fileInputRef.current.value = "";
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setIsOpen(false);
+      }
+    };
+
+    // Keep background content from scrolling while the modal is open.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen]);
 
   const open = () => {
     setStep(1);
@@ -175,15 +220,27 @@ export default function ValidateAddNewListModal() {
     setSelectedColumnIndex(0);
     setHasHeader(true);
     setIsSubmitting(false);
+    setIsPreparingPurchase(false);
     setProgress({ phase: "", pct: 0 });
+    setRequiredCredits(0);
+    setUniqueEmailList([]);
+    setBalance({
+      totalCredit: 0,
+      usedCredit: 0,
+      availableCredit: 0,
+      subExpiredAt: null,
+      isSubscriptionActive: false,
+    });
+    setTopupQuote({ unitPriceUsd: null, totalPriceUsd: null, currency: "usd" });
+    setIsCreatingTopupCheckout(false);
     lastScrolledColumnRef.current = null;
     preservedScrollLeftRef.current = null;
     didInitSelectionRef.current = false;
-    dialogRef.current?.showModal();
+    setIsOpen(true);
   };
 
   const close = () => {
-    dialogRef.current?.close();
+    setIsOpen(false);
   };
 
   const handleFileSelected = async (nextFile) => {
@@ -245,11 +302,158 @@ export default function ValidateAddNewListModal() {
       }
       setStep(2);
       await loadPreview({ nextHasHeader: hasHeader, source: "initial" });
+      return;
+    }
+
+    if (step === 2) {
+      if (!file) return;
+
+      if (!previewRows?.length) {
+        toast.error("Please load the preview first.");
+        return;
+      }
+
+      const sampleValidation = validateEmailColumnFromSample({
+        rows: previewRows,
+        selectedIndex: selectedColumnIndex,
+        hasHeader,
+      });
+      if (!sampleValidation.ok) {
+        toast.error(sampleValidation.message);
+        return;
+      }
+
+      setIsPreparingPurchase(true);
+      setProgress({ phase: "Counting emails", pct: 0 });
+
+      try {
+        const uniqueEmails = new Set();
+        let totalNonEmpty = 0;
+        let validCount = 0;
+        let rowIndex = 0;
+
+        await new Promise((resolve, reject) => {
+          Papa.parse(file, {
+            skipEmptyLines: "greedy",
+            chunkSize: 1024 * 1024,
+            chunk: (results, parser) => {
+              try {
+                const rows = results?.data || [];
+
+                for (const row of rows) {
+                  rowIndex += 1;
+
+                  if (rowIndex > MAX_ROWS) {
+                    parser.abort();
+                    reject(
+                      new Error(
+                        `Row limit exceeded (max ${MAX_ROWS.toLocaleString()} rows).`
+                      )
+                    );
+                    return;
+                  }
+
+                  if (hasHeader && rowIndex === 1) {
+                    continue;
+                  }
+
+                  const raw = row?.[selectedColumnIndex];
+                  if (raw === undefined || raw === null) continue;
+                  const text = String(raw).trim();
+                  if (!text) continue;
+
+                  totalNonEmpty += 1;
+                  if (!isValidEmail(text)) {
+                    continue;
+                  }
+
+                  const email = normalizeEmail(text);
+                  uniqueEmails.add(email);
+                  validCount += 1;
+                }
+
+                const cursor = results?.meta?.cursor;
+                if (typeof cursor === "number" && file.size > 0) {
+                  const pct = Math.min(
+                    98,
+                    Math.max(0, Math.round((cursor / file.size) * 90))
+                  );
+                  setProgress({ phase: "Counting emails", pct });
+                }
+              } catch (e) {
+                parser.abort();
+                reject(e);
+              }
+            },
+            complete: () => resolve(),
+            error: (err) => reject(err),
+          });
+        });
+
+        if (validCount === 0 || uniqueEmails.size === 0) {
+          throw new Error(
+            "No valid email addresses were found. Please select the correct Email column."
+          );
+        }
+
+        const ratio = totalNonEmpty === 0 ? 0 : validCount / totalNonEmpty;
+        const threshold = totalNonEmpty < 20 ? 0.8 : 0.6;
+        if (ratio < threshold) {
+          throw new Error(
+            `The selected column does not look like an Email column (valid email ratio: ${(ratio * 100).toFixed(
+              0
+            )}%). Please select a column that contains email addresses.`
+          );
+        }
+
+        const list = Array.from(uniqueEmails);
+        setUniqueEmailList(list);
+        setRequiredCredits(list.length);
+
+        const balanceRes = await fetch("/api/credits/balance");
+        if (!balanceRes.ok) {
+          const body = await balanceRes.json().catch(() => ({}));
+          throw new Error(body?.error || "Failed to load credit balance.");
+        }
+
+        const balanceBody = await balanceRes.json();
+        setBalance({
+          totalCredit: balanceBody?.totalCredit || 0,
+          usedCredit: balanceBody?.usedCredit || 0,
+          availableCredit: balanceBody?.availableCredit || 0,
+          subExpiredAt: balanceBody?.subExpiredAt || null,
+          isSubscriptionActive: Boolean(balanceBody?.isSubscriptionActive),
+        });
+
+        const quoteRes = await fetch(
+          `/api/credits/topup-quote?requiredCredits=${list.length}`
+        );
+        if (quoteRes.ok) {
+          const quoteBody = await quoteRes.json().catch(() => ({}));
+          setTopupQuote({
+            unitPriceUsd: quoteBody?.unitPriceUsd ?? null,
+            totalPriceUsd: quoteBody?.totalPriceUsd ?? null,
+            currency: quoteBody?.currency || "usd",
+          });
+        } else {
+          setTopupQuote({ unitPriceUsd: null, totalPriceUsd: null, currency: "usd" });
+        }
+
+        setProgress({ phase: "Done", pct: 100 });
+        setStep(3);
+      } catch (e) {
+        console.error(e);
+        toast.error(e?.message || "Failed to prepare purchase.");
+        setProgress({ phase: "", pct: 0 });
+      } finally {
+        setIsPreparingPurchase(false);
+      }
     }
   };
 
   const goBack = () => {
     if (step === 2) setStep(1);
+    if (step === 3) setStep(2);
   };
 
   const previewDataRows = useMemo(() => {
@@ -257,6 +461,21 @@ export default function ValidateAddNewListModal() {
     const dataRows = hasHeader ? rows.slice(1) : rows;
     return dataRows.slice(0, PREVIEW_ROWS);
   }, [previewRows, hasHeader]);
+
+  const purchaseStats = useMemo(() => {
+    const available = balance?.availableCredit || 0;
+    const required = requiredCredits || 0;
+    const shortage = Math.max(0, required - available);
+    const allowed = Math.min(required, available);
+    const afterPartial = Math.max(0, available - allowed);
+    return {
+      required,
+      available,
+      shortage,
+      allowed,
+      afterPartial,
+    };
+  }, [balance?.availableCredit, requiredCredits]);
 
   useEffect(() => {
     if (step !== 2) return;
@@ -292,21 +511,85 @@ export default function ValidateAddNewListModal() {
     });
   }, [step, isParsingPreview, selectedColumnIndex, columnNames.length]);
 
-  const submit = async () => {
+  const refreshBalance = async () => {
+    const res = await fetch("/api/credits/balance");
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.error || "Failed to load credit balance.");
+    }
+
+    const body = await res.json();
+    setBalance({
+      totalCredit: body?.totalCredit || 0,
+      usedCredit: body?.usedCredit || 0,
+      availableCredit: body?.availableCredit || 0,
+      subExpiredAt: body?.subExpiredAt || null,
+      isSubscriptionActive: Boolean(body?.isSubscriptionActive),
+    });
+
+    if (requiredCredits > 0) {
+      const quoteRes = await fetch(
+        `/api/credits/topup-quote?requiredCredits=${requiredCredits}`
+      );
+      if (quoteRes.ok) {
+        const quoteBody = await quoteRes.json().catch(() => ({}));
+        setTopupQuote({
+          unitPriceUsd: quoteBody?.unitPriceUsd ?? null,
+          totalPriceUsd: quoteBody?.totalPriceUsd ?? null,
+          currency: quoteBody?.currency || "usd",
+        });
+      } else {
+        setTopupQuote({ unitPriceUsd: null, totalPriceUsd: null, currency: "usd" });
+      }
+    }
+  };
+
+  const createTopupCheckout = async () => {
+    setIsCreatingTopupCheckout(true);
+    try {
+      const res = await fetch("/api/stripe/create-credit-topup-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requiredCredits,
+          successUrl: window.location.href,
+          cancelUrl: window.location.href,
+        }),
+      });
+
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body?.error || "Failed to create checkout session.");
+      }
+
+      const url = body?.url;
+      if (!url) {
+        throw new Error("Missing checkout URL.");
+      }
+
+      // Open in a new tab so the modal can keep state.
+      window.open(url, "_blank", "noopener,noreferrer");
+      toast.success("Complete the payment in Stripe, then click Refresh balance.");
+    } finally {
+      setIsCreatingTopupCheckout(false);
+    }
+  };
+
+  const submit = async ({ emailsToImport }) => {
     if (!file) return;
 
-    if (!previewRows?.length) {
-      toast.error("Please load the preview first.");
+    if (!uniqueEmailList?.length || requiredCredits <= 0) {
+      toast.error("Please complete the purchase step first.");
       return;
     }
 
-    const sampleValidation = validateEmailColumnFromSample({
-      rows: previewRows,
-      selectedIndex: selectedColumnIndex,
-      hasHeader,
-    });
-    if (!sampleValidation.ok) {
-      toast.error(sampleValidation.message);
+    if (!balance?.isSubscriptionActive) {
+      toast.error("Subscription required.");
+      return;
+    }
+
+    if (!emailsToImport.length) {
+      toast.error("Not enough credits to validate any emails.");
       return;
     }
 
@@ -354,152 +637,39 @@ export default function ValidateAddNewListModal() {
         throw new Error(body?.error || "Failed to create job.");
       }
 
-      setProgress({ phase: "Parsing and importing", pct: 12 });
+      setProgress({ phase: "Importing emails", pct: 12 });
 
-      const uniqueEmails = new Set();
-      let totalNonEmpty = 0;
-      let validCount = 0;
-      let rowIndex = 0;
-      let batch = [];
-      let batchInFlight = Promise.resolve();
+      const total = emailsToImport.length;
+      const batchSize = 1000;
+      let sent = 0;
 
-      const flushBatch = async () => {
-        const toSend = batch;
-        batch = [];
-        if (!toSend.length) return;
-        await fetch("/api/validate/email-tasks", {
+      for (let i = 0; i < total; i += batchSize) {
+        const current = emailsToImport.slice(i, i + batchSize);
+        const res = await fetch("/api/validate/email-tasks", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jobId, emails: toSend }),
-        }).then(async (res) => {
-          if (!res.ok) {
-            const body = await res.json().catch(() => ({}));
-            throw new Error(body?.error || "Failed to write email tasks.");
+          body: JSON.stringify({ jobId, emails: current }),
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          if (res.status === 402) {
+            // Credits changed unexpectedly (race condition). Return to purchase step.
+            setStep(3);
+            await refreshBalance().catch(() => {});
           }
-        });
-      };
+          throw new Error(body?.error || "Failed to write email tasks.");
+        }
 
-      await new Promise((resolve, reject) => {
-        Papa.parse(file, {
-          skipEmptyLines: "greedy",
-          chunkSize: 1024 * 1024,
-          chunk: (results, parser) => {
-            try {
-              const rows = results?.data || [];
-
-              for (const row of rows) {
-                rowIndex += 1;
-
-                if (rowIndex > MAX_ROWS) {
-                  parser.abort();
-                  reject(
-                    new Error(
-                      `Row limit exceeded (max ${MAX_ROWS.toLocaleString()} rows).`
-                    )
-                  );
-                  return;
-                }
-
-                if (hasHeader && rowIndex === 1) {
-                  continue;
-                }
-
-                const raw = row?.[selectedColumnIndex];
-                if (raw === undefined || raw === null) continue;
-                const text = String(raw).trim();
-                if (!text) continue;
-
-                totalNonEmpty += 1;
-                if (!isValidEmail(text)) {
-                  continue;
-                }
-
-                const email = normalizeEmail(text);
-                if (uniqueEmails.has(email)) continue;
-
-                uniqueEmails.add(email);
-                validCount += 1;
-                batch.push(email);
-
-                if (batch.length >= 1000) {
-                  const currentBatch = batch;
-                  batch = [];
-                  batchInFlight = batchInFlight.then(() =>
-                    fetch("/api/validate/email-tasks", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ jobId, emails: currentBatch }),
-                    }).then(async (res) => {
-                      if (!res.ok) {
-                        const body = await res.json().catch(() => ({}));
-                        throw new Error(body?.error || "Failed to write email tasks.");
-                      }
-                    })
-                  );
-                }
-              }
-
-              const cursor = results?.meta?.cursor;
-              if (typeof cursor === "number" && file.size > 0) {
-                const pct = Math.min(95, Math.max(12, Math.round((cursor / file.size) * 80) + 12));
-                setProgress({ phase: "Parsing and importing", pct });
-              }
-            } catch (e) {
-              parser.abort();
-              reject(e);
-            }
-          },
-          complete: async () => {
-            try {
-              await batchInFlight;
-              await flushBatch();
-
-              if (validCount === 0) {
-                reject(
-                  new Error(
-                    "No valid email addresses were found. Please select the correct Email column."
-                  )
-                );
-                return;
-              }
-
-              const ratio = totalNonEmpty === 0 ? 0 : validCount / totalNonEmpty;
-              const threshold = totalNonEmpty < 20 ? 0.8 : 0.6;
-              if (ratio < threshold) {
-                reject(
-                  new Error(
-                    `The selected column does not look like an Email column (valid email ratio: ${(ratio * 100).toFixed(
-                      0
-                    )}%). Please select a column that contains email addresses.`
-                  )
-                );
-                return;
-              }
-
-              setProgress({ phase: "Finalizing", pct: 97 });
-              const updateRes = await fetch(`/api/validate/jobs/${jobId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ uniqueEmails: uniqueEmails.size }),
-              });
-
-              if (!updateRes.ok) {
-                const body = await updateRes.json().catch(() => ({}));
-                throw new Error(body?.error || "Failed to finalize job.");
-              }
-
-              resolve();
-            } catch (e) {
-              reject(e);
-            }
-          },
-          error: (err) => reject(err),
-        });
-      });
+        sent += current.length;
+        const pct = Math.min(95, Math.max(12, Math.round((sent / total) * 80) + 12));
+        setProgress({ phase: "Importing emails", pct });
+      }
 
       setProgress({ phase: "Done", pct: 100 });
       toast.success("Job created and emails imported.");
       close();
+      router.refresh();
     } catch (e) {
       console.error(e);
       toast.error(e?.message || "Submit failed.");
@@ -511,27 +681,25 @@ export default function ValidateAddNewListModal() {
 
   return (
     <>
-      <button className="btn btn-primary" onClick={open}>
-        Add New List
-      </button>
+	      <button className="btn btn-primary" onClick={open}>
+	        {buttonLabel}
+	      </button>
 
-      <dialog className="modal" ref={dialogRef}>
-        <div className="modal-box w-11/12 max-w-5xl">
-          <button
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-            onClick={close}
-            aria-label="Close"
-          >
-            ✕
-          </button>
+      {isOpen ? (
+        <div className="modal modal-open z-[9990]" role="dialog" aria-modal="true">
+          <div className="modal-box w-11/12 max-w-5xl">
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={close}
+              aria-label="Close"
+            >
+              ✕
+            </button>
 
-          <div className="space-y-5">
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold">Add New List</h3>
-              <div className="text-sm text-base-content/60">
-                CSV only. Max 50MB. Max {MAX_ROWS.toLocaleString()} rows.
-              </div>
-            </div>
+	            <div className="space-y-5">
+	            <div className="space-y-1">
+	              <h3 className="text-lg font-semibold">Add New Email List</h3>
+	            </div>
 
             <ul className="steps w-full">
               <li className={`step ${step >= 1 ? "step-primary" : ""}`}>
@@ -540,14 +708,35 @@ export default function ValidateAddNewListModal() {
               <li className={`step ${step >= 2 ? "step-primary" : ""}`}>
                 Select column
               </li>
+                <li className={`step ${step >= 3 ? "step-primary" : ""}`}>
+                  Review & confirm
+                </li>
             </ul>
 
-            {step === 1 ? (
-              <div className="space-y-4">
-                <div
-                  className="border border-dashed border-base-300 rounded-box p-10 text-center bg-base-200 cursor-pointer select-none"
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
+		            {step === 1 ? (
+		              <div className="space-y-4">
+		                <div className="text-sm text-base-content/60">
+		                  <ul className="list-disc pl-5 space-y-1">
+		                    <li>CSV only</li>
+		                    <li>Max file size: 50MB</li>
+		                    <li>Max rows: {MAX_ROWS.toLocaleString()}</li>
+		                    <li>
+		                      Must include an Email column.{" "}
+		                      <a
+		                        className="link"
+		                        href="/templates/email_list_template.csv"
+		                        download
+		                      >
+		                        Download template
+		                      </a>
+		                      .
+		                    </li>
+		                  </ul>
+		                </div>
+		                <div
+		                  className="border border-dashed border-base-300 rounded-box p-10 text-center bg-base-200 cursor-pointer select-none"
+		                  onDragOver={(e) => e.preventDefault()}
+		                  onDrop={(e) => {
                     e.preventDefault();
                     const dropped = e.dataTransfer.files?.[0];
                     handleFileSelected(dropped);
@@ -662,7 +851,7 @@ export default function ValidateAddNewListModal() {
                           currentSelectedColumnIndex: selectedColumnIndex,
                         });
                       }}
-                      disabled={isParsingPreview || isSubmitting}
+                      disabled={isParsingPreview || isSubmitting || isPreparingPurchase}
                     />
                     <span className="text-sm font-medium min-w-8 text-right">
                       {hasHeader ? "Yes" : "No"}
@@ -692,7 +881,7 @@ export default function ValidateAddNewListModal() {
                                   className="radio radio-xs"
                                   checked={selectedColumnIndex === idx}
                                   onChange={() => setSelectedColumnIndex(idx)}
-                                  disabled={isParsingPreview || isSubmitting}
+                                  disabled={isParsingPreview || isSubmitting || isPreparingPurchase}
                                 />
                                 <span className="truncate max-w-[180px]">
                                   {name || `Column ${idx + 1}`}
@@ -737,10 +926,10 @@ export default function ValidateAddNewListModal() {
                   </div>
                 </div>
 
-                {isSubmitting ? (
+                {isSubmitting || isPreparingPurchase ? (
                   <div className="space-y-2">
                     <div className="text-sm text-base-content/70">
-                      {progress.phase}（{progress.pct}%）
+                      {progress.phase} ({progress.pct}%)
                     </div>
                     <progress
                       className="progress progress-primary w-full"
@@ -752,11 +941,104 @@ export default function ValidateAddNewListModal() {
               </div>
             ) : null}
 
+            {step === 3 ? (
+              <div className="space-y-4">
+                {!balance?.isSubscriptionActive ? (
+                  <div className="alert alert-warning">
+                    Subscription required. Please subscribe before uploading.
+                  </div>
+                ) : null}
+
+                <div className="bg-base-200 rounded-box p-4 text-sm">
+                  <div className="grid grid-cols-2 gap-y-2">
+                    <div>Emails to validate</div>
+                    <div className="text-right font-semibold">
+                      {purchaseStats.required.toLocaleString()}
+                    </div>
+                    <div>Credits required</div>
+                    <div className="text-right font-semibold">
+                      {purchaseStats.required.toLocaleString()}
+                    </div>
+                      <div>Current credit balance</div>
+                      <div className="text-right font-semibold flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-xs btn-square"
+                          aria-label="Refresh balance"
+                          title="Refresh balance"
+                          onClick={async () => {
+                            try {
+                              await refreshBalance();
+                            toast.success("Balance updated.");
+                          } catch (e) {
+                            toast.error(e?.message || "Failed to refresh balance.");
+                          }
+                        }}
+                        disabled={isSubmitting || isCreatingTopupCheckout}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="w-4 h-4"
+                        >
+                          <path d="M21 12a9 9 0 1 1-3-6.7" />
+                          <path d="M21 3v6h-6" />
+                          </svg>
+                        </button>
+                        <span>{purchaseStats.available.toLocaleString()}</span>
+                      </div>
+
+                    {purchaseStats.shortage > 0 ? (
+                      <>
+                        <div>Shortage</div>
+                        <div className="text-right font-semibold">
+                          {purchaseStats.shortage.toLocaleString()}
+                        </div>
+                        <div>Price per credit</div>
+                        <div className="text-right font-semibold">
+                          {topupQuote?.unitPriceUsd
+                            ? `$${topupQuote.unitPriceUsd}`
+                            : "—"}
+                        </div>
+                          <div>Total price</div>
+                          <div className="text-right font-semibold">
+                            {topupQuote?.unitPriceUsd && topupQuote?.totalPriceUsd ? (
+                              `$${topupQuote.unitPriceUsd} * ${purchaseStats.shortage.toLocaleString()} = $${topupQuote.totalPriceUsd}`
+                            ) : topupQuote?.totalPriceUsd ? (
+                              `$${topupQuote.totalPriceUsd}`
+                            ) : (
+                              "—"
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                      <>
+                        <div>Remaining after validation</div>
+                        <div className="text-right font-semibold">
+                          {purchaseStats.afterPartial.toLocaleString()}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             <div className="flex items-center justify-between">
               <button
                 className="btn btn-ghost"
                 onClick={goBack}
-                disabled={step === 1 || isSubmitting}
+                disabled={
+                  step === 1 ||
+                  isSubmitting ||
+                  isPreparingPurchase ||
+                  isCreatingTopupCheckout
+                }
               >
                 Back
               </button>
@@ -769,26 +1051,102 @@ export default function ValidateAddNewListModal() {
                 >
                   Next
                 </button>
-              ) : (
+              ) : step === 2 ? (
                 <button
                   className="btn btn-primary"
-                  onClick={submit}
-                  disabled={isSubmitting || isParsingPreview}
+                  onClick={goNext}
+                  disabled={isSubmitting || isParsingPreview || isPreparingPurchase}
                 >
-                  {isSubmitting ? (
+                  {isPreparingPurchase ? (
                     <span className="loading loading-spinner loading-sm" />
                   ) : (
-                    "Create"
+                    "Next"
                   )}
                 </button>
-              )}
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {purchaseStats.shortage > 0 ? (
+                      <>
+                        <button
+                          className="btn btn-outline"
+                          onClick={() => {
+                            submit({
+                            emailsToImport: uniqueEmailList.slice(0, purchaseStats.allowed),
+                          });
+                        }}
+                        disabled={
+                          isSubmitting ||
+                          isCreatingTopupCheckout ||
+                          !uniqueEmailList?.length ||
+                          requiredCredits <= 0 ||
+                          !balance?.isSubscriptionActive ||
+                            purchaseStats.allowed <= 0
+                          }
+                        >
+                          {isSubmitting ? (
+                            <span className="loading loading-spinner loading-sm" />
+                          ) : (
+                            `Validate First ${purchaseStats.allowed.toLocaleString()}`
+                          )}
+                        </button>
+
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            createTopupCheckout().catch((e) => {
+                              console.error(e);
+                              toast.error(e?.message || "Failed to create checkout.");
+                            });
+                          }}
+                          disabled={
+                            isSubmitting ||
+                            isCreatingTopupCheckout ||
+                            !uniqueEmailList?.length ||
+                            requiredCredits <= 0 ||
+                            !balance?.isSubscriptionActive
+                          }
+                        >
+                          {isCreatingTopupCheckout ? (
+                            <span className="loading loading-spinner loading-sm" />
+                          ) : (
+                            `Purchase ${purchaseStats.shortage.toLocaleString()} credits`
+                          )}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => {
+                          submit({ emailsToImport: uniqueEmailList });
+                        }}
+                      disabled={
+                        isSubmitting ||
+                        isCreatingTopupCheckout ||
+                        !uniqueEmailList?.length ||
+                        requiredCredits <= 0 ||
+                        !balance?.isSubscriptionActive
+                      }
+                      >
+                        {isSubmitting ? (
+                          <span className="loading loading-spinner loading-sm" />
+                        ) : (
+                          "Submit"
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )}
             </div>
           </div>
+          </div>
+          <button
+            type="button"
+            className="modal-backdrop"
+            onClick={close}
+            aria-label="Close modal backdrop"
+          />
         </div>
-        <form method="dialog" className="modal-backdrop">
-          <button aria-label="Close modal backdrop">close</button>
-        </form>
-      </dialog>
-    </>
-  );
-}
+        ) : null}
+      </>
+    );
+  }

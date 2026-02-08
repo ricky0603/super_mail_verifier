@@ -1,5 +1,6 @@
 import config from "@/config";
 import ButtonCheckout from "./ButtonCheckout";
+import { formatUsdPerCredit } from "@/libs/pricing";
 
 // <Pricing/> displays the pricing plans for your app
 // It's your Stripe config in config.js.stripe.plans[] that will be used to display the plans
@@ -66,6 +67,12 @@ const Pricing = () => {
                     </p>
                   </div>
                 </div>
+                <p className="text-sm text-base-content/70">
+                  {formatUsdPerCredit({
+                    priceUsd: plan.price,
+                    credits: plan.creditsPerCycle,
+                  })}
+                </p>
                 {plan.features && (
                   <ul className="space-y-2.5 leading-relaxed text-base flex-1">
                     {plan.features.map((feature, i) => (
@@ -89,10 +96,10 @@ const Pricing = () => {
                   </ul>
                 )}
                 <div className="space-y-2">
-                  <ButtonCheckout priceId={plan.priceId} />
+                  <ButtonCheckout priceId={plan.priceId} mode="subscription" />
 
                   <p className="flex items-center justify-center gap-2 text-sm text-center text-base-content/80 font-medium relative">
-                    Pay once. Access forever.
+                    Subscription. Credits reset monthly.
                   </p>
                 </div>
               </div>

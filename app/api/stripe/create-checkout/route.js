@@ -2,6 +2,12 @@ import { createCheckout } from "@/libs/stripe";
 import { createClient } from "@/libs/supabase/server";
 import { NextResponse } from "next/server";
 
+const isActiveSubscription = (subExpiredAt) => {
+  if (!subExpiredAt) return false;
+  const ms = new Date(subExpiredAt).getTime();
+  return Number.isFinite(ms) && ms > Date.now();
+};
+
 // This function is used to create a Stripe Checkout Session (one-time payment or subscription)
 // It's called by the <ButtonCheckout /> component
 // Users must be authenticated. It will prefill the Checkout data with their email and/or credit card (if any)
@@ -35,13 +41,24 @@ export async function POST(req) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { priceId, mode, successUrl, cancelUrl } = body;
 
     const { data } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user?.id)
-      .single();
+      .maybeSingle();
+
+    if (body.mode === "subscription" && isActiveSubscription(data?.sub_expired_at)) {
+      return NextResponse.json(
+        { error: "Already subscribed. Use Manage billing to change plans." },
+        { status: 409 }
+      );
+    }
 
     const stripeSessionURL = await createCheckout({
       priceId,
@@ -51,7 +68,7 @@ export async function POST(req) {
       // If user is logged in, it will pass the user ID to the Stripe Session so it can be retrieved in the webhook later
       clientReferenceId: user?.id,
       user: {
-        email: data?.email,
+        email: data?.email || user?.email,
         // If the user has already purchased, it will automatically prefill it's credit card
         customerId: data?.customer_id,
       },

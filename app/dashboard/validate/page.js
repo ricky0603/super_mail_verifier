@@ -221,19 +221,20 @@ export default async function ValidatePage({ searchParams }) {
                     <td className="hidden lg:table-cell text-base-content/70 align-top">
                       {job.lastUpdate}
                     </td>
-                    <td className="align-top">
-                      <div className="flex items-center justify-end gap-1">
-                        {job.status === "COMPLETE" ? (
-                          <button
-                            className="btn btn-ghost btn-sm"
-                            aria-label="Download"
-                          >
-                            <DownloadIcon className="w-5 h-5" />
-                          </button>
-                        ) : null}
-                        <Link
-                          className="btn btn-ghost btn-sm"
-                          href={`/dashboard/validate/${job.id}`}
+	                    <td className="align-top">
+	                      <div className="flex items-center justify-end gap-1">
+	                        {job.status === "COMPLETE" ? (
+	                          <a
+	                            className="btn btn-ghost btn-sm"
+	                            aria-label="Download"
+	                            href={`/api/validate/jobs/${job.id}/download`}
+	                          >
+	                            <DownloadIcon className="w-5 h-5" />
+	                          </a>
+	                        ) : null}
+	                        <Link
+	                          className="btn btn-ghost btn-sm"
+	                          href={`/dashboard/validate/${job.id}`}
                           aria-label="View"
                         >
                           <EyeIcon className="w-5 h-5" />

@@ -113,3 +113,86 @@ create index verification_email_tasks_job_updated_at_idx
 alter table public.verification_email_tasks
   add column if not exists detail_tooltip text null;
 ```
+
+## Credits (V1)
+
+V1 credits 设计采用 `total_credit + used_credit` 模型：
+
+- 可用 credits：`total_credit - used_credit`
+- 扣减：只增加 `used_credit`
+- 订阅续费（或同周期升级）成功付款时，根据订阅计划把 `total_credit` 更新为对应额度
+  - 新周期：同时把 `used_credit` 重置为 0
+  - 同周期升级：不重置 `used_credit`（避免用户用很小的差价换取满额重置）
+
+### `profiles`
+
+用于记录订阅信息与 credits 余额（与 `auth.users.id` 关联）。
+
+```sql
+create table public.profiles (
+  id uuid primary key,
+
+  customer_id text null,
+  subscription_id text null,
+  price_id text null,
+
+  sub_period_start timestamptz null,
+  sub_expired_at timestamptz null,
+
+  total_credit integer not null default 0,
+  used_credit integer not null default 0,
+
+  updated_at timestamptz not null default now()
+);
+```
+
+### 幂等表
+
+用于防止 Stripe webhook 重放导致重复发放/重复处理。
+
+#### `processed_invoices`
+
+```sql
+create table public.processed_invoices (
+  invoice_id text primary key,
+  user_id uuid not null,
+  processed_at timestamptz not null default now(),
+  price_id text null,
+  sub_period_start timestamptz null,
+  sub_expired_at timestamptz null
+);
+```
+
+#### `credit_topup_grants`
+
+```sql
+create table public.credit_topup_grants (
+  checkout_session_id text primary key,
+  user_id uuid not null,
+  credits_granted integer not null,
+  created_at timestamptz not null default now()
+);
+```
+
+### RPC: `consume_credits_and_insert_email_tasks`
+
+用于原子化执行：
+
+- 写入 `verification_email_tasks`（同一个 job 内按 `email_normalized` 去重）
+- 校验 credits 是否足够
+- 扣减 credits（增加 `used_credit`）
+
+函数签名：
+
+```sql
+select public.consume_credits_and_insert_email_tasks(p_job_id := '<job_id>', p_emails := array['a@b.com']);
+```
+
+#### 权限（必须）
+
+如果你在 Supabase 里新建了该函数，但调用时报 403 / `Unauthorized`（例如 `code: 28000`），通常是因为缺少 `EXECUTE` 权限。请执行：
+
+```sql
+grant execute on function public.consume_credits_and_insert_email_tasks(uuid, text[]) to authenticated;
+grant execute on function public.consume_credits_and_insert_email_tasks(uuid, text[]) to service_role;
+```

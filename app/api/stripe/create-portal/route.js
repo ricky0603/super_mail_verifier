@@ -24,7 +24,7 @@ export async function POST(req) {
       .from("profiles")
       .select("*")
       .eq("id", user?.id)
-      .single();
+      .maybeSingle();
 
     if (!profile?.customer_id) {
       return NextResponse.json(

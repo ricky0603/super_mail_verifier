@@ -25,6 +25,14 @@
 - Use `npm run lint` for baseline checks. If adding tests, document how to run them in this file.
 - Doc-only changes (`*.md` only): no need to run `npm run lint`.
 
+### Credit Smoke Tests
+本仓库没有测试框架；credits 相关的联调/回归建议使用脚本：
+
+```bash
+set -a && source .env.local && set +a
+node scripts/credits-rpc-smoke.mjs
+```
+
 ## Commit & Pull Request Guidelines
 - Recent history uses conventional prefixes such as `feat:`, `fix:`, `style:`; some commits include emojis. Prefer `type: short summary` (lowercase, imperative).
 - PRs should include a clear description, impacted areas (e.g., `app/`, `components/`), and screenshots for UI changes.

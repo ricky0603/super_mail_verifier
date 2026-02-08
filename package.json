@@ -7,9 +7,10 @@
     "build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
     "@headlessui/react": "^2.2.9",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.1",

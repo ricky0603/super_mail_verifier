@@ -3,6 +3,12 @@ import { createClient } from "@/libs/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const isActiveSubscription = (subExpiredAt) => {
+  if (!subExpiredAt) return false;
+  const ms = new Date(subExpiredAt).getTime();
+  return Number.isFinite(ms) && ms > Date.now();
+};
+
 export async function POST(req) {
   try {
     const supabase = await createClient();
@@ -20,6 +26,23 @@ export async function POST(req) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("sub_expired_at")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      return NextResponse.json({ error: profileError.message }, { status: 400 });
+    }
+
+    if (!isActiveSubscription(profile?.sub_expired_at)) {
+      return NextResponse.json(
+        { error: "Subscription required" },
+        { status: 403 }
+      );
     }
 
     if (!jobId || !name) {
@@ -50,4 +73,3 @@ export async function POST(req) {
     return NextResponse.json({ error: e?.message }, { status: 500 });
   }
 }
-

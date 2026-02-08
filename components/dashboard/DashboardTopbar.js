@@ -1,3 +1,6 @@
+import { createClient } from "@/libs/supabase/server";
+import DashboardTopbarClient from "@/components/dashboard/DashboardTopbarClient";
+
 const getIdentityData = (user) => {
   const identities = Array.isArray(user?.identities) ? user.identities : [];
   return identities[0]?.identity_data || null;
@@ -21,7 +24,7 @@ const getUserInitial = (label) => {
   return normalized ? normalized[0].toUpperCase() : "U";
 };
 
-const DashboardTopbar = ({ user }) => {
+export default async function DashboardTopbar({ user }) {
   const userLabel = getUserLabel(user);
   const userInitial = getUserInitial(userLabel);
   const identityData = getIdentityData(user);
@@ -33,40 +36,31 @@ const DashboardTopbar = ({ user }) => {
     identityData?.picture ||
     identityData?.avatar_url;
 
-  return (
-    <header className="h-16 border-b border-base-300 bg-base-100">
-      <div className="h-full px-6 flex items-center justify-end gap-6">
-        <div className="text-sm text-base-content/70">
-          Credits: <span className="font-semibold text-base-content">99</span>
-        </div>
-        <div className="flex items-center gap-3 min-w-0">
-          {avatarUrl ? (
-            <div className="avatar">
-              <div className="w-9 rounded-full">
-                <img
-                  alt={userLabel}
-                  src={avatarUrl}
-                  className="w-9 h-9"
-                  referrerPolicy="no-referrer"
-                  width={36}
-                  height={36}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="avatar placeholder">
-              <div className="bg-base-200 text-base-content w-9 h-9 rounded-full flex items-center justify-center">
-                <span className="text-sm leading-none">{userInitial}</span>
-              </div>
-            </div>
-          )}
-          <div className="text-sm font-medium truncate flex items-center h-9 leading-none">
-            {userLabel}
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
+  let availableCredit = null;
+  try {
+    const supabase = await createClient();
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("total_credit,used_credit")
+      .eq("id", user?.id)
+      .maybeSingle();
 
-export default DashboardTopbar;
+    if (!error) {
+      const total = profile?.total_credit || 0;
+      const used = profile?.used_credit || 0;
+      availableCredit = Math.max(0, total - used);
+    }
+  } catch {
+    // Ignore credit display errors; don't block the rest of the UI.
+  }
+
+  return (
+    <DashboardTopbarClient
+      userLabel={userLabel}
+      userInitial={userInitial}
+      avatarUrl={avatarUrl}
+      availableCredit={availableCredit}
+    />
+  );
+}
+

@@ -82,7 +82,7 @@ export default async function ValidateDetailPage({ params, searchParams }) {
 
   const { data: job, error: jobError } = await supabase
     .from("verification_jobs")
-    .select("id,name")
+    .select("id,name,status")
     .eq("id", jobId)
     .maybeSingle();
 
@@ -136,9 +136,15 @@ export default async function ValidateDetailPage({ params, searchParams }) {
           </div>
         </div>
 
-        <button className="btn btn-ghost" aria-label="Download">
-          <DownloadIcon className="w-6 h-6" />
-        </button>
+        {job.status === "COMPLETE" ? (
+          <a
+            className="btn btn-ghost"
+            aria-label="Download"
+            href={`/api/validate/jobs/${jobId}/download`}
+          >
+            <DownloadIcon className="w-6 h-6" />
+          </a>
+        ) : null}
       </div>
 
       <div className="bg-base-100 border border-base-300 rounded-xl overflow-hidden">

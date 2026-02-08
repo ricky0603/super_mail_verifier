@@ -19,48 +19,70 @@ const config = {
         // REQUIRED — we use this to find the plan in the webhook (for instance if you want to update the user's credits based on the plan)
         priceId:
           process.env.NODE_ENV === "development"
-            ? "price_1Niyy5AxyNprDp7iZIqEyD2h"
-            : "price_456",
+            ? "price_1Sy6ZFB27fwLi0YrmkLj144i"
+            : "price_1Sy6ZFB27fwLi0YrmkLj144i",
         //  REQUIRED - Name of the plan, displayed on the pricing page
         name: "Starter",
-        // A friendly description of the plan, displayed on the pricing page. Tip: explain why this plan and not others
-        description: "Perfect for small projects",
+        // A friendly description of the plan, displayed on the pricing page.
+        description: "For getting started with small lists.",
         // The price you want to display, the one user will be charged on Stripe.
-        price: 79,
+        price: 49,
         // If you have an anchor price (i.e. $29) that you want to display crossed out, put it here. Otherwise, leave it empty
-        priceAnchor: 99,
+        priceAnchor: null,
+        // Credits reset on every successful subscription payment (invoice.paid).
+        creditsPerCycle: 500,
         features: [
           {
-            name: "NextJS boilerplate",
+            name: "500 credits / month",
           },
-          { name: "User oauth" },
-          { name: "Database" },
-          { name: "Emails" },
+          { name: "CSV upload + export" },
+          { name: "Email verification" },
         ],
       },
       {
-        // This plan will look different on the pricing page, it will be highlighted. You can only have one plan with isFeatured: true
+        // This plan will look different on the pricing page, it will be highlighted.
         isFeatured: true,
         priceId:
           process.env.NODE_ENV === "development"
-            ? "price_1O5KtcAxyNprDp7iftKnrrpw"
-            : "price_456",
-        name: "Advanced",
-        description: "You need more power",
-        price: 99,
-        priceAnchor: 149,
+            ? "price_1Sy6aqB27fwLi0Yr8zEpnQaE"
+            : "price_1Sy6aqB27fwLi0Yr8zEpnQaE",
+        name: "Growth",
+        description: "For growing teams and bigger lists.",
+        price: 149,
+        priceAnchor: null,
+        creditsPerCycle: 3000,
         features: [
           {
-            name: "NextJS boilerplate",
+            name: "3,000 credits / month",
           },
-          { name: "User oauth" },
-          { name: "Database" },
-          { name: "Emails" },
-          { name: "1 year of updates" },
-          { name: "24/7 support" },
+          { name: "CSV upload + export" },
+          { name: "Email verification" },
+        ],
+      },
+      {
+        priceId:
+          process.env.NODE_ENV === "development"
+            ? "price_1Sy6bJB27fwLi0YrTxXKT4yj"
+            : "price_1Sy6bJB27fwLi0YrTxXKT4yj",
+        name: "Scale",
+        description: "For high-volume verification.",
+        price: 399,
+        priceAnchor: null,
+        creditsPerCycle: 12000,
+        features: [
+          {
+            name: "12,000 credits / month",
+          },
+          { name: "CSV upload + export" },
+          { name: "Email verification" },
         ],
       },
     ],
+    // One-time (Pay as you go) credits price.
+    creditTopupPriceId:
+      process.env.NODE_ENV === "development"
+        ? "price_1Sy2ZnB27fwLi0YrROxkvXKh"
+        : "price_1Sy2ZnB27fwLi0YrROxkvXKh",
   },
   aws: {
     // If you use AWS S3/Cloudfront, put values in here
