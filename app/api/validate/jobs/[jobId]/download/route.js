@@ -36,17 +36,27 @@ const sanitizeFilename = (name) =>
     .replace(/[\\/:*?"<>|]+/g, "_")
     .slice(0, 180) || "results.csv";
 
+const decodeArrayBufferUtf8 = (ab) => {
+  if (typeof TextDecoder !== "undefined") {
+    return new TextDecoder("utf-8").decode(ab);
+  }
+
+  // Fallback：极少数旧 Node 环境可能没有 TextDecoder。
+  // 仅在这种情况下才使用 Buffer（Edge 运行时一般都有 TextDecoder）。
+  return Buffer.from(ab).toString("utf8");
+};
+
 const blobToUtf8 = async (blob) => {
   if (!blob) return "";
   if (typeof blob === "string") return blob;
 
   if (blob instanceof ArrayBuffer) {
-    return Buffer.from(blob).toString("utf8");
+    return decodeArrayBufferUtf8(blob);
   }
 
   if (typeof blob.arrayBuffer === "function") {
     const ab = await blob.arrayBuffer();
-    return Buffer.from(ab).toString("utf8");
+    return decodeArrayBufferUtf8(ab);
   }
 
   // Fallback：尽量不因为运行时差异导致下载不可用。

@@ -6,13 +6,11 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // 限制 middleware 只跑在需要鉴权/刷新 session 的路径上，避免爬虫访问营销页时也触发一次 Supabase auth 请求。
+    "/dashboard/:path*",
+    "/api/auth/callback",
+    "/api/credits/:path*",
+    "/api/validate/:path*",
+    "/api/stripe/:path*",
   ],
 };
