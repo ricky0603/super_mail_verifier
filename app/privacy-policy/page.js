@@ -1,32 +1,8 @@
 import Link from "next/link";
 import { getSEOTags } from "@/libs/seo";
-import config from "@/config";
-
-// CHATGPT PROMPT TO GENERATE YOUR PRIVACY POLICY — replace with your own data 👇
-
-// 1. Go to https://chat.openai.com/
-// 2. Copy paste bellow
-// 3. Replace the data with your own (if needed)
-// 4. Paste the answer from ChatGPT directly in the <pre> tag below
-
-// You are an excellent lawyer.
-
-// I need your help to write a simple privacy policy for my website. Here is some context:
-// - Website: https://shipfa.st
-// - Name: ShipFast
-// - Description: A JavaScript code boilerplate to help entrepreneurs launch their startups faster
-// - User data collected: name, email and payment information
-// - Non-personal data collection: web cookies
-// - Purpose of Data Collection: Order processing
-// - Data sharing: we do not share the data with any other parties
-// - Children's Privacy: we do not collect any data from children
-// - Updates to the Privacy Policy: users will be updated by email
-// - Contact information: marc@shipfa.st
-
-// Please write a simple privacy policy for my site. Add the current date.  Do not add or explain your reasoning. Answer:
 
 export const metadata = getSEOTags({
-  title: `Privacy Policy | ${config.appName}`,
+  title: "Privacy Policy | Reeverify",
   canonicalUrlRelative: "/privacy-policy",
 });
 
@@ -49,59 +25,82 @@ const PrivacyPolicy = () => {
           </svg>{" "}
           Back
         </Link>
-        <h1 className="text-3xl font-extrabold pb-6">
-          Privacy Policy for {config.appName}
-        </h1>
+        <h1 className="text-3xl font-extrabold pb-6">Privacy Policy</h1>
 
         <pre
-          className="leading-relaxed whitespace-pre-wrap"
-          style={{ fontFamily: "sans-serif" }}
+          className="leading-relaxed whitespace-pre-wrap font-sans"
         >
-          {`Last Updated: 2023-08-25
+          {`Last Updated: February 12, 2026
 
-Thank you for visiting ShipFast ("we," "us," or "our"). This Privacy Policy outlines how we collect, use, and protect your personal and non-personal information when you use our website located at https://shipfa.st (the "Website").
+This Privacy Policy explains how Answer42 LLC ("we," "us," or "our") collects, uses, and shares information when you use Reeverify (the "Service"), including our website at https://reeverify.com (the "Website").
 
-By accessing or using the Website, you agree to the terms of this Privacy Policy. If you do not agree with the practices described in this policy, please do not use the Website.
+By accessing or using the Service, you agree to this Privacy Policy. If you do not agree, please do not use the Service.
 
 1. Information We Collect
 
-1.1 Personal Data
+1.1 Account Information
+If you create an account, we may collect information such as your name, email address, and company name.
 
-We collect the following personal information from you:
+1.2 Billing and Payment Information
+If you make a purchase, payments are processed by Stripe. We may receive billing-related details (such as your billing name, billing address, and payment status), but we do not store full payment card numbers on our servers.
 
-Name: We collect your name to personalize your experience and communicate with you effectively.
-Email: We collect your email address to send you important information regarding your orders, updates, and communication.
-Payment Information: We collect payment details to process your orders securely. However, we do not store your payment information on our servers. Payments are processed by trusted third-party payment processors.
+1.3 Customer Content (Uploaded Data)
+When you use the Service, you may upload data such as email addresses and related fields (for example, name and company). We process this data to provide verification results and related reporting.
 
-1.2 Non-Personal Data
+1.4 Usage Data and Device Information
+We may collect information about how you use the Service, including IP address, device and browser information, pages/screens viewed, timestamps, and diagnostic/log data.
 
-We may use web cookies and similar technologies to collect non-personal information such as your IP address, browser type, device information, and browsing patterns. This information helps us to enhance your browsing experience, analyze trends, and improve our services.
+1.5 Cookies and Analytics
+We use cookies and similar technologies for essential functionality and analytics. We use Google Analytics and Microsoft Clarity to help understand Website usage. These providers may collect information such as your IP address, device identifiers, and interaction data, subject to their own privacy practices.
 
-2. Purpose of Data Collection
+2. How We Use Information
 
-We collect and use your personal data for the sole purpose of order processing. This includes processing your orders, sending order confirmations, providing customer support, and keeping you updated about the status of your orders.
+We use information we collect to:
+- Provide, maintain, and improve the Service
+- Process transactions and send related notices
+- Provide customer support and respond to requests
+- Monitor, prevent, and address security, fraud, and abuse
+- Comply with legal obligations and enforce our terms
 
-3. Data Sharing
+3. How We Share Information
 
-We do not share your personal data with any third parties except as required for order processing (e.g., sharing your information with payment processors). We do not sell, trade, or rent your personal information to others.
+We may share information in the following circumstances:
+- Service Providers: We work with vendors to operate the Service, such as Stripe (payments), Supabase (database and storage), Resend (transactional email), Sentry (error monitoring), Google Analytics and Microsoft Clarity (analytics), and Cloudflare (security and performance).
+- Legal and Safety: We may disclose information if required by law or if we believe disclosure is necessary to protect rights, safety, and the integrity of the Service.
+- Business Transfers: If we are involved in a merger, acquisition, financing, reorganization, or sale of assets, information may be transferred as part of that transaction.
+- With Your Instructions: We may share information when you direct us to do so.
+
+We do not sell your personal information.
 
 4. Children's Privacy
 
-ShipFast is not intended for children under the age of 13. We do not knowingly collect personal information from children. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us at the email address provided below.
+The Service is not intended for children under 13, and we do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us.
 
-5. Updates to the Privacy Policy
+5. Data Retention
 
-We may update this Privacy Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. Any updates will be posted on this page, and we may notify you via email about significant changes.
+We retain information for as long as necessary to provide the Service and for legitimate business and legal purposes. Typical retention periods include:
+- Customer Content (Uploaded Lists and Results): We generally retain uploaded data and verification results for up to 180 days, unless you delete it sooner. If self-serve deletion is not available for certain data, you can request deletion by contacting us.
+- Account Information: We retain account information while your account is active. If you request account deletion, we aim to delete or de-identify account data within 30 days, subject to legal and operational requirements.
+- Billing Records: We may retain billing and transaction records for up to 7 years (or longer if required) for tax, accounting, and compliance purposes.
+- Security and Diagnostic Logs: We generally retain logs for up to 60 days, unless we need to keep them longer to investigate abuse or security incidents.
+- Analytics Data: Retention depends on provider settings and configurations.
 
-6. Contact Information
+6. Security
 
-If you have any questions, concerns, or requests related to this Privacy Policy, you can contact us at:
+We take reasonable measures to protect information, but no method of transmission or storage is 100% secure. You use the Service at your own risk.
 
-Email: marc@shipfa.st
+7. International Processing
 
-For all other inquiries, please visit our Contact Us page on the Website.
+We are based in the United States, and information may be processed and stored in the United States and other locations where our service providers operate.
 
-By using ShipFast, you consent to the terms of this Privacy Policy.`}
+8. Changes to This Privacy Policy
+
+We may update this Privacy Policy from time to time. We will post the updated version on this page and update the "Last Updated" date. If changes are material, we may provide additional notice (for example, by email).
+
+9. Contact Us
+
+If you have questions or requests about this Privacy Policy or your information, contact us at:
+support@reeverify.com`}
         </pre>
       </div>
     </main>
