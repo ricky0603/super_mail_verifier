@@ -71,34 +71,70 @@ export default function Page() {
             }}
           />
           <div className="relative mx-auto max-w-5xl px-6 text-center lg:px-8">
-            <div className="badge gap-2 border-none bg-neutral px-5 py-4 font-black text-primary">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
-              </span>
-              ACTIVATE 40% OF YOUR RISKY LIST
+            <div className="badge gap-2 border-none bg-error px-5 py-4 font-black italic text-white">
+              STOP TRUSTING FAKE &quot;VALID&quot; RESULTS
             </div>
 
             <h1 className="mt-8 text-5xl font-black uppercase italic leading-[0.9] tracking-tighter md:text-7xl lg:text-8xl">
-              Zero Bounces.
+              Tired of &quot;Valid&quot;
               <br />
-              <span className="inline-block -rotate-1 rounded bg-primary px-4 text-neutral">Pure ROI.</span>
+              <span className="inline-block -rotate-1 rounded bg-neutral px-4 text-primary">
+                Emails Bouncing?
+              </span>
             </h1>
 
             <p className="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-base-content/70 md:text-2xl">
-              Stop throwing away catch-all emails that traditional tools mark as dead. Reeverify uses
-              <span className="font-bold text-base-content"> real-send probing</span> to unlock leads your competitors ignore.
+              Legacy tools <span className="line-through decoration-error decoration-4">lie to you</span>.
+              They mark emails as valid, but can still bounce. Reeverify uses
+              <span className="font-bold text-base-content"> Real-Send Probing</span> to catch the
+              bounces they miss before you launch.
             </p>
 
             <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-              <a href="#pricing" className="btn btn-primary btn-lg rounded-full px-10 font-black italic text-neutral">
-                Start Verifying Free
-              </a>
-              <a href="#gap" className="btn btn-outline btn-lg rounded-full">
-                Why SMTP Fails?
+              <a
+                href="#pricing"
+                className="btn btn-primary btn-lg rounded-full px-12 font-black italic text-neutral"
+              >
+                Verify My &quot;Valid&quot; List
               </a>
             </div>
 
+            <div className="mx-auto mt-14 max-w-2xl overflow-hidden rounded-2xl border-2 border-neutral bg-white p-4 text-left shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
+              <div className="mb-4 flex items-center gap-2 border-b border-base-300 pb-2">
+                <div className="h-3 w-3 rounded-full bg-error" />
+                <div className="h-3 w-3 rounded-full bg-warning" />
+                <div className="h-3 w-3 rounded-full bg-success" />
+                <span className="ml-2 text-xs font-mono italic opacity-40">
+                  Live Comparison Engine
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-lg bg-slate-50 p-3">
+                  <div className="mb-1 text-[10px] font-bold uppercase text-slate-400">Legacy Verifier</div>
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-mono text-sm text-slate-700">ceo@target.com</span>
+                    <span className="badge badge-success badge-xs p-1 text-[8px] font-bold">VALID</span>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border-2 border-primary bg-neutral p-3 text-white">
+                  <div className="mb-1 text-[10px] font-bold uppercase text-primary">Reeverify</div>
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-mono text-sm">ceo@target.com</span>
+                    <span className="badge badge-error badge-xs p-1 text-[8px] font-bold">BOUNCE</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 text-[11px] font-bold uppercase italic text-error">
+                We caught the 550 error that legacy validators missed.
+              </div>
+            </div>
+
+            <p className="mt-12 text-sm font-bold uppercase tracking-widest opacity-60">
+              Compatible with your workflow
+            </p>
             <div className="mt-14 grid grid-cols-2 gap-3 opacity-50 grayscale sm:grid-cols-4">
               <div className="font-black italic">CLAY</div>
               <div className="font-black italic">INSTANTLY</div>
