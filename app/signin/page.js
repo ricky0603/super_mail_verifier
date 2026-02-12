@@ -68,8 +68,12 @@ export default function Login() {
           Home
         </Link>
       </div>
-      <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-center mb-12">
-        Sign-in to {config.appName}{" "}
+      <h1 className="mb-12 flex items-center justify-center gap-3 text-3xl md:text-4xl font-extrabold tracking-tight">
+        <span>Sign-in to</span>
+        <span className="leading-none font-black tracking-tighter">
+          <span className="text-base-content">Ree</span>
+          <span className="ml-0.5 rounded bg-primary px-2 py-0.5 text-slate-950">verify</span>
+        </span>
       </h1>
 
       <div className="space-y-8 max-w-xl mx-auto">
