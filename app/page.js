@@ -119,7 +119,9 @@ export default function Page() {
                 </div>
 
                 <div className="rounded-lg border-2 border-primary bg-neutral p-3 text-white">
-                  <div className="mb-1 text-[10px] font-bold uppercase text-primary">Reeverify</div>
+                  <div className="mb-1">
+                    <BrandLogo size="sm" dark />
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="truncate font-mono text-sm">ceo@target.com</span>
                     <span className="badge badge-error badge-xs p-1 text-[8px] font-bold">BOUNCE</span>
@@ -128,7 +130,7 @@ export default function Page() {
               </div>
 
               <div className="mt-4 text-[11px] font-bold uppercase italic text-error">
-                We caught the 550 error that legacy validators missed.
+                WE CAUGHT INVALID EMAIL THAT LEGACY VALIDATORS MISSED.
               </div>
             </div>
 
@@ -148,7 +150,7 @@ export default function Page() {
           <div className="mx-auto grid max-w-6xl gap-16 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
             <div>
               <h2 className="text-4xl font-black uppercase italic leading-none md:text-5xl">
-                Why do verified lists still <span className="text-error">kill your domain?</span>
+                Why do verified lists still <span className="text-error">bounce</span>
               </h2>
               <div className="mt-8 space-y-5 text-lg text-base-content/70">
                 <p>
@@ -189,8 +191,10 @@ export default function Page() {
                 <div className="mx-auto mb-7 flex h-20 w-20 rotate-3 items-center justify-center rounded-3xl bg-primary text-3xl font-black text-neutral shadow-xl">
                   01
                 </div>
-                <h3 className="text-2xl font-black uppercase italic">Import Risky</h3>
-                <p className="mt-3 text-base-content/65">Sync catch-all and risky segments from your lead source.</p>
+                <h3 className="text-2xl font-black uppercase italic">Import Lists</h3>
+                <p className="mt-3 text-base-content/65">
+                  Sync valid, catch-all, and risky segments from your lead source.
+                </p>
               </div>
               <div className="text-center">
                 <div className="mx-auto mb-7 flex h-20 w-20 -rotate-3 items-center justify-center rounded-3xl bg-neutral text-3xl font-black text-primary shadow-xl">
@@ -216,7 +220,9 @@ export default function Page() {
           <div className="mx-auto max-w-5xl px-6 lg:px-8">
             <div className="text-center">
               <h2 className="text-4xl font-black uppercase italic">The Truth: Case Study #842</h2>
-              <p className="mt-2 text-base-content/60">5,000 Fortune 500 prospects, catch-all segment only.</p>
+              <p className="mt-2 text-base-content/60">
+                3,746 emails marked as valid, including catch-all and valid segments.
+              </p>
             </div>
 
             <div className="relative mt-12 grid gap-6 md:grid-cols-2 md:gap-8">
@@ -236,12 +242,12 @@ export default function Page() {
 
               <div className="card scale-[1.02] border-4 border-primary bg-neutral p-8 text-neutral-content shadow-2xl">
                 <div className="mb-6 flex items-start justify-between">
-                  <span className="text-sm font-black text-primary">REEVERIFY</span>
-                  <span className="text-primary">✓✓</span>
+                  <BrandLogo size="sm" dark />
+                  <span className="text-2xl font-black text-success">✓</span>
                 </div>
                 <div className="py-8 text-center">
                   <p className="font-mono text-neutral-content/50">Result for Catch-all:</p>
-                  <p className="mt-2 text-3xl font-black text-primary">PROTECTED</p>
+                  <p className="mt-2 text-3xl font-black text-primary">SAFE OR BOUNCE</p>
                   <div className="divider opacity-20">Actual Outcome</div>
                   <p className="text-5xl font-black text-success">0.0%</p>
                   <p className="mt-2 text-sm font-bold uppercase text-primary">Bounce Rate Guaranteed</p>
@@ -284,9 +290,11 @@ export default function Page() {
                     <td className="text-center text-success">Zero Risk</td>
                   </tr>
                   <tr>
-                    <td>Second-Order Intel</td>
+                    <td>Extra Signals</td>
                     <td className="text-center text-error">No</td>
-                    <td className="text-center text-success">OOO and Referrals</td>
+                    <td className="text-center text-success">
+                      Out of office, resigned, autoreply and referrals
+                    </td>
                   </tr>
                 </tbody>
               </table>
