@@ -1,4 +1,16 @@
+import "server-only";
+
 import Stripe from "stripe";
+import { requireServerEnv } from "@/libs/env";
+
+const createStripeClient = () => {
+  const secretKey = requireServerEnv("STRIPE_SECRET_KEY");
+  return new Stripe(secretKey, {
+    apiVersion: "2023-08-16",
+    httpClient: Stripe.createFetchHttpClient(),
+    timeout: 20000,
+  });
+};
 
 // This is used to create a Stripe Checkout for one-time payments. It's usually triggered with the <ButtonCheckout /> component. Webhooks are used to update the user's state in the database.
 export const createCheckout = async ({
@@ -10,7 +22,7 @@ export const createCheckout = async ({
   clientReferenceId,
   user,
 }) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const stripe = createStripeClient();
 
   const extraParams = {};
   const sessionParams = {};
@@ -128,7 +140,7 @@ export const createCreditTopupCheckout = async ({
   user,
   metadata,
 }) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const stripe = createStripeClient();
 
   const extraParams = {};
 
@@ -216,11 +228,7 @@ export const createCreditTopupCheckout = async ({
 
 // This is used to create Customer Portal sessions, so users can manage their subscriptions (payment methods, cancel, etc..)
 export const createCustomerPortal = async ({ customerId, returnUrl }) => {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error("Missing STRIPE_SECRET_KEY");
-  }
-
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const stripe = createStripeClient();
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -230,11 +238,7 @@ export const createCustomerPortal = async ({ customerId, returnUrl }) => {
 };
 
 export const createCustomerPortalFlow = async ({ customerId, returnUrl, flowData }) => {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error("Missing STRIPE_SECRET_KEY");
-  }
-
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const stripe = createStripeClient();
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -247,7 +251,7 @@ export const createCustomerPortalFlow = async ({ customerId, returnUrl, flowData
 // This is used to get the uesr checkout session and populate the data so we get the planId the user subscribed to
 export const findCheckoutSession = async (sessionId) => {
   try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = createStripeClient();
 
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ["line_items"],

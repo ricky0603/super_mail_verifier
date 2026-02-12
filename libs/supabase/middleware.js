@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { requireServerEnv } from "@/libs/env";
 
 export async function updateSession(request) {
   // Skip auth refresh for API routes that don't need authentication
@@ -17,8 +18,8 @@ export async function updateSession(request) {
   });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    requireServerEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requireServerEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
     {
       cookies: {
         getAll() {

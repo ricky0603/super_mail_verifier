@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/libs/supabase/server";
 import Stripe from "stripe";
 import { createCustomerPortalFlow } from "@/libs/stripe";
+import { requireServerEnv } from "@/libs/env";
 
 const isActiveSubscription = (subExpiredAt) => {
   if (!subExpiredAt) return false;
@@ -56,12 +57,12 @@ export async function POST(req) {
       );
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json({ error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
-    }
-
     // We need the subscription item id to build subscription_update_confirm flow.
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(requireServerEnv("STRIPE_SECRET_KEY"), {
+      apiVersion: "2023-08-16",
+      httpClient: Stripe.createFetchHttpClient(),
+      timeout: 20000,
+    });
     const subscription = await stripe.subscriptions.retrieve(profile.subscription_id);
     const subItemId = subscription?.items?.data?.[0]?.id;
     if (!subItemId) {

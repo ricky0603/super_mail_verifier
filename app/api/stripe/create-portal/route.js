@@ -44,10 +44,6 @@ export async function POST(req) {
       );
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json({ error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
-    }
-
     const stripePortalUrl = await createCustomerPortal({
       customerId: profile.customer_id,
       returnUrl,

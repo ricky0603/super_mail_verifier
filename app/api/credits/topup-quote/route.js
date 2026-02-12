@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import config from "@/config";
 import { createClient } from "@/libs/supabase/server";
+import { requireServerEnv } from "@/libs/env";
 
 export const dynamic = "force-dynamic";
 
@@ -124,14 +125,11 @@ export async function GET(req) {
       );
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json(
-        { error: "Missing STRIPE_SECRET_KEY" },
-        { status: 500 }
-      );
-    }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(requireServerEnv("STRIPE_SECRET_KEY"), {
+      apiVersion: "2023-08-16",
+      httpClient: Stripe.createFetchHttpClient(),
+      timeout: 20000,
+    });
     const price = await stripe.prices.retrieve(priceId);
 
     const currency = (price?.currency || "usd").toLowerCase();
@@ -165,4 +163,3 @@ export async function GET(req) {
     return NextResponse.json({ error: e?.message }, { status: 500 });
   }
 }
-

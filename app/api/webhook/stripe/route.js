@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { requireServerEnv } from "@/libs/env";
 
 const getPlanCreditsByPriceId = (priceId) => {
   const plan = config?.stripe?.plans?.find((p) => p.priceId === priceId);
@@ -54,31 +55,22 @@ const extractUserIdFromInvoice = (invoice) => {
 };
 
 export async function POST(req) {
-  if (
-    !process.env.STRIPE_SECRET_KEY ||
-    !process.env.STRIPE_WEBHOOK_SECRET ||
-    !process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
-    console.error("Missing required environment variables for Stripe webhook");
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 }
-    );
-  }
-
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  const stripe = new Stripe(requireServerEnv("STRIPE_SECRET_KEY"), {
     apiVersion: "2023-08-16",
+    httpClient: Stripe.createFetchHttpClient(),
+    timeout: 20000,
   });
 
   const body = await req.text();
   const signature = (await headers()).get("stripe-signature");
+  const webhookSecret = requireServerEnv("STRIPE_WEBHOOK_SECRET");
 
   let event;
   try {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET
+      webhookSecret
     );
   } catch (err) {
     console.error(`Webhook signature verification failed. ${err.message}`);
@@ -86,8 +78,8 @@ export async function POST(req) {
   }
 
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    requireServerEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requireServerEnv("SUPABASE_SERVICE_ROLE_KEY"),
     {
       auth: { persistSession: false },
       realtime: { disabled: true },
