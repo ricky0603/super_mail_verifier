@@ -35,7 +35,7 @@ const TOS = () => {
           style={{ fontFamily: "sans-serif" }}
         >
           {`Effective Date: January 1, 2026
-Last Updated: January 1, 2026
+Last Updated: February 12, 2026
 
 These Terms of Use ("Terms") are a legal agreement between you and Answer42 LLC ("Answer42," "we," "us," or "our") and govern your access to and use of Reeverify, including https://reeverify.com and related services (collectively, the "Service"). By using the Service, you agree to these Terms.
 
@@ -78,7 +78,7 @@ You authorize us and our payment processor to charge the applicable subscription
 
 You may cancel your subscription at any time. Cancellation takes effect at the end of your current billing period, and you keep access through that period.
 
-As a general rule, fees are non-refundable. In exceptional cases, we may issue a partial refund based on unused remaining credits, calculated at USD $0.05 per credit, less applicable Stripe processing fees.
+As a general rule, fees are non-refundable. In exceptional cases, we may issue a partial refund based on unused remaining credits, calculated using 70% of your plan's implied per-credit rate (the plan price divided by the credits included in that plan), multiplied by unused remaining credits, less applicable Stripe processing fees.
 
 No refunds are provided for orders older than 14 days.
 

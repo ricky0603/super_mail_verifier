@@ -98,8 +98,13 @@ export async function POST(req) {
 
     return NextResponse.json({ url });
   } catch (e) {
-    console.error(e);
+    console.error("create-change-plan-portal failed", {
+      message: e?.message,
+      type: e?.type,
+      code: e?.code,
+      requestId: e?.requestId,
+      statusCode: e?.statusCode,
+    });
     return NextResponse.json({ error: e?.message }, { status: 500 });
   }
 }
-

@@ -20,7 +20,7 @@ const config = {
         priceId:
           process.env.NODE_ENV === "development"
             ? "price_1Sy6ZFB27fwLi0YrmkLj144i"
-            : "price_1Sy6ZFB27fwLi0YrmkLj144i",
+            : "price_1Szr3KBGytd3Tykemu94SxJG",
         //  REQUIRED - Name of the plan, displayed on the pricing page
         name: "Starter",
         // A friendly description of the plan, displayed on the pricing page.
@@ -45,7 +45,7 @@ const config = {
         priceId:
           process.env.NODE_ENV === "development"
             ? "price_1Sy6aqB27fwLi0Yr8zEpnQaE"
-            : "price_1Sy6aqB27fwLi0Yr8zEpnQaE",
+            : "price_1Szr3MBGytd3Tykex4qjYgnn",
         name: "Growth",
         description: "For growing teams and bigger lists.",
         price: 149,
@@ -63,7 +63,7 @@ const config = {
         priceId:
           process.env.NODE_ENV === "development"
             ? "price_1Sy6bJB27fwLi0YrTxXKT4yj"
-            : "price_1Sy6bJB27fwLi0YrTxXKT4yj",
+            : "price_1Szr3OBGytd3TykeVqNkNFLv",
         name: "Scale",
         description: "For high-volume verification.",
         price: 399,
@@ -82,7 +82,7 @@ const config = {
     creditTopupPriceId:
       process.env.NODE_ENV === "development"
         ? "price_1Sy2ZnB27fwLi0YrROxkvXKh"
-        : "price_1Sy2ZnB27fwLi0YrROxkvXKh",
+        : "price_1Szr3FBGytd3Tyke6zxgqfva",
   },
   aws: {
     // If you use AWS S3/Cloudfront, put values in here

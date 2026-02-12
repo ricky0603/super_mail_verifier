@@ -69,6 +69,9 @@ export default function DashboardPlans() {
       const { url } = await apiClient.post("/stripe/create-portal", {
         returnUrl: window.location.href,
       });
+      if (!url || typeof url !== "string") {
+        throw new Error("Failed to open billing portal.");
+      }
       window.location.href = url;
     } finally {
       setIsOpeningPortal(false);
@@ -82,6 +85,9 @@ export default function DashboardPlans() {
         priceId,
         returnUrl: window.location.href,
       });
+      if (!url || typeof url !== "string") {
+        throw new Error("Failed to open plan change flow.");
+      }
       window.location.href = url;
     } finally {
       setIsOpeningPortal(false);

@@ -47,7 +47,9 @@ const DashboardSidebar = () => {
       <div className="p-3 border-t border-base-300">
         <a
           className="btn btn-outline w-full justify-center gap-2"
-          href="mailto:?subject=Request%20support"
+          href={`mailto:${config?.resend?.supportEmail || "support@reeverify.com"}?subject=${encodeURIComponent(
+            "Request support"
+          )}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

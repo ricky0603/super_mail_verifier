@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { Popover, Transition } from "@headlessui/react";
+import toast from "react-hot-toast";
 import { createClient } from "@/libs/supabase/client";
 import apiClient from "@/libs/api";
 
@@ -42,9 +43,13 @@ const ButtonAccount = () => {
 				returnUrl: window.location.href,
 			});
 
+			if (!url || typeof url !== "string") {
+				throw new Error("Failed to open billing portal.");
+			}
 			window.location.href = url;
 		} catch (e) {
 			console.error(e);
+			toast.error(e?.message || "Failed to open billing portal.");
 		}
 
 		setIsLoading(false);

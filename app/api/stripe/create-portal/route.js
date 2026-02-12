@@ -6,7 +6,11 @@ export async function POST(req) {
   try {
     const supabase = await createClient();
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const returnUrl = typeof body?.returnUrl === "string" ? body.returnUrl : "";
+    if (!returnUrl) {
+      return NextResponse.json({ error: "returnUrl is required" }, { status: 400 });
+    }
 
     const {
       data: { user },
@@ -20,11 +24,15 @@ export async function POST(req) {
       );
     }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("*")
+      .select("customer_id")
       .eq("id", user?.id)
       .maybeSingle();
+
+    if (profileError) {
+      return NextResponse.json({ error: profileError.message }, { status: 400 });
+    }
 
     if (!profile?.customer_id) {
       return NextResponse.json(
@@ -36,16 +44,36 @@ export async function POST(req) {
       );
     }
 
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json({ error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
+    }
+
     const stripePortalUrl = await createCustomerPortal({
       customerId: profile.customer_id,
-      returnUrl: body.returnUrl,
+      returnUrl,
     });
+
+    if (!stripePortalUrl) {
+      return NextResponse.json(
+        {
+          error:
+            "Failed to create billing portal session. Make sure Stripe Customer Portal is enabled.",
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       url: stripePortalUrl,
     });
   } catch (e) {
-    console.error(e);
+    console.error("create-portal failed", {
+      message: e?.message,
+      type: e?.type,
+      code: e?.code,
+      requestId: e?.requestId,
+      statusCode: e?.statusCode,
+    });
     return NextResponse.json({ error: e?.message }, { status: 500 });
   }
 }
