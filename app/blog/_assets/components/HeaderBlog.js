@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Popover, Transition } from "@headlessui/react";
 import Link from "next/link";
-import Image from "next/image";
-import logo from "@/app/icon.png";
 import config from "@/config";
 import { categories } from "../meta";
 import ButtonSignin from "@/components/ButtonSignin";
+import BrandLogo from "@/components/BrandLogo";
 
 const links = [
   {
@@ -158,15 +157,7 @@ const HeaderBlog = () => {
             href="/"
             title={`${config.appName} hompage`}
           >
-            <Image
-              src={logo}
-              alt={`${config.appName} logo`}
-              className="w-8"
-              priority={true}
-              width={32}
-              height={32}
-            />
-            <span className="font-extrabold text-lg">{config.appName}</span>
+            <BrandLogo size="sm" />
           </Link>
         </div>
         {/* Burger button to open menu on mobile */}
@@ -226,16 +217,7 @@ const HeaderBlog = () => {
               title={`${config.appName} hompage`}
               href="/"
             >
-              <Image
-                src={logo}
-                alt={`${config.appName} logo`}
-                className="w-8"
-                placeholder="blur"
-                priority={true}
-                width={32}
-                height={32}
-              />
-              <span className="font-extrabold text-lg">{config.appName}</span>
+              <BrandLogo size="sm" />
             </Link>
             <button
               type="button"

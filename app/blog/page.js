@@ -6,9 +6,9 @@ import config from "@/config";
 import { getSEOTags } from "@/libs/seo";
 
 export const metadata = getSEOTags({
-  title: `${config.appName} Blog | Stripe Chargeback Protection`,
+  title: `${config.appName} Blog | Email Verification Insights`,
   description:
-    "Learn how to prevent chargebacks, how to accept payments online, and keep your Stripe account in good standing",
+    "Learn practical strategies for email verification, bounce prevention, and outbound list quality.",
   canonicalUrlRelative: "/blog",
 });
 
@@ -24,8 +24,8 @@ export default async function Blog() {
           The {config.appName} Blog
         </h1>
         <p className="text-lg opacity-80 leading-relaxed">
-          Learn how to ship your startup in days, not weeks. And get the latest
-          updates about the boilerplate
+          Insights, playbooks, and product updates to help you reduce bounce
+          risk and improve outreach performance.
         </p>
       </section>
 

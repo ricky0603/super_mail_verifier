@@ -1,4 +1,4 @@
-import marcImg from "@/app/blog/_assets/images/authors/marc.png";
+import teamAvatarImg from "@/app/blog/_assets/images/authors/marc.png";
 
 // =================================================================================================
 // BLOG CATEGORIES
@@ -10,17 +10,16 @@ export const categories = [
     title: "New Features",
     titleShort: "Features",
     description:
-      "Here are the latest features we've added to ShipFast. I'm constantly improving our product to help you ship faster.",
-    descriptionShort: "Latest features added to ShipFast.",
+      "The latest Reeverify product updates, feature releases, and verification workflow improvements.",
+    descriptionShort: "Latest features added to Reeverify.",
   },
   {
     slug: "tutorial",
     title: "How Tos & Tutorials",
     titleShort: "Tutorials",
     description:
-      "Learn how to use ShipFast with these step-by-step tutorials. I'll show you how to ship faster and save time.",
-    descriptionShort:
-      "Learn how to use ShipFast with these step-by-step tutorials.",
+      "Step-by-step guides for safer outreach, better list hygiene, and practical email verification operations.",
+    descriptionShort: "Step-by-step tutorials for using Reeverify effectively.",
   },
 ];
 
@@ -77,27 +76,17 @@ const socialIcons = {
 
 export const authors = [
   {
-    slug: "marc",
-    name: "Marc Lou",
-    job: "Maker of ByeDispute",
+    slug: "reeverify-team",
+    name: "Reeverify Team",
+    job: "Email deliverability and verification specialists",
     description:
-      "Marc is a developer and an entrepreneur. He's built 20 startups in the last 3 years. 6 were profitable and 3 were acquired. He's currently building ByeDispute, the #1 Stripe Chargebacks Protection tool.",
-    avatar: marcImg,
+      "We share practical insights from real-world verification workflows, including bounce prevention, catch-all handling, and outreach data quality.",
+    avatar: teamAvatarImg,
     socials: [
-      {
-        name: socialIcons.twitter.name,
-        icon: socialIcons.twitter.svg,
-        url: "https://twitter.com/marc_louvion",
-      },
-      {
-        name: socialIcons.linkedin.name,
-        icon: socialIcons.linkedin.svg,
-        url: "https://www.linkedin.com/in/marclouvion/",
-      },
       {
         name: socialIcons.github.name,
         icon: socialIcons.github.svg,
-        url: "https://github.com/Marc-Lou-Org/ship-fast",
+        url: "https://reeverify.com/blog",
       },
     ],
   },

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import BrandLogo from "@/components/BrandLogo";
 import config from "@/config";
 
 const DashboardSidebar = () => {
@@ -10,8 +11,8 @@ const DashboardSidebar = () => {
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-base-300 bg-base-100 min-h-screen">
       <div className="h-16 flex items-center px-6 border-b border-base-300">
-        <Link href="/dashboard" className="font-semibold text-base-content/80">
-          {config?.appName || "Dashboard"}
+        <Link href="/dashboard" className="inline-flex items-center">
+          <BrandLogo size="sm" />
         </Link>
       </div>
 

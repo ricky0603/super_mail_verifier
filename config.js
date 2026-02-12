@@ -1,9 +1,9 @@
 const config = {
   // REQUIRED
-  appName: "ShipFast Supabase",
+  appName: "Reeverify",
   // REQUIRED: a short description of your app for SEO tags (can be overwritten)
   appDescription:
-    "The NextJS boilerplate with all you need to build your SaaS, AI tool, or any other web app.",
+    "Reeverify helps you verify emails with real-send probing, reduce bounce risk, and uncover actionable signals before outreach.",
   // REQUIRED (no https://, not trialing slash at the end, just the naked domain)
   domainName: "reeverify.com",
   crisp: {

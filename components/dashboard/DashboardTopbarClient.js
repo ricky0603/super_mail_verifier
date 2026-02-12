@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { createClient } from "@/libs/supabase/client";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function DashboardTopbarClient({
   userLabel,
@@ -25,23 +26,27 @@ export default function DashboardTopbarClient({
 
   return (
     <header className="h-16 border-b border-base-300 bg-base-100">
-      <div className="h-full px-6 flex items-center justify-end gap-6">
-        <div className="flex items-center gap-2">
-	          <div className="flex items-center gap-1">
-	            <Link
-	              href="/dashboard/plans"
-	              className="inline-flex items-center h-6 text-sm text-base-content/70 hover:text-base-content transition-colors whitespace-nowrap"
-	            >
-	              Credits:{" "}
-	              <span className="font-semibold text-base-content">
-	                {availableCredit === null ? "—" : availableCredit.toLocaleString()} credits
-	              </span>
-	            </Link>
+      <div className="h-full px-6 flex items-center justify-between gap-6">
+        <Link href="/dashboard" className="inline-flex items-center md:hidden">
+          <BrandLogo size="sm" />
+        </Link>
 
-	            <span
-	              className="tooltip tooltip-bottom flex items-center h-6"
-	              data-tip="Credits can be used for validation. 1 credit = 1 successfully processed email address"
-	            >
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Link
+              href="/dashboard/plans"
+              className="inline-flex items-center h-6 text-sm text-base-content/70 hover:text-base-content transition-colors whitespace-nowrap"
+            >
+              Credits:{" "}
+              <span className="font-semibold text-base-content">
+                {availableCredit === null ? "—" : availableCredit.toLocaleString()} credits
+              </span>
+            </Link>
+
+            <span
+              className="tooltip tooltip-bottom flex items-center h-6"
+              data-tip="Credits can be used for validation. 1 credit = 1 successfully processed email address"
+            >
               <button
                 type="button"
                 className="inline-flex items-center justify-center w-6 h-6 text-base-content/70 hover:text-base-content transition-colors"

@@ -13,9 +13,11 @@ export const getSEOTags = ({
   canonicalUrlRelative,
   extraTags,
 } = {}) => {
+  const defaultTitle = `${config.appName} - The Ultimate Email Verification Solution`;
+
   return {
     // up to 50 characters (what does your app do for the user?) > your main should be here
-    title: title || config.appName,
+    title: title || defaultTitle,
     // up to 160 characters (how does your app help the user?)
     description: description || config.appDescription,
     // some keywords separated by commas. by default it will be your app name
@@ -29,7 +31,7 @@ export const getSEOTags = ({
     ),
 
     openGraph: {
-      title: openGraph?.title || config.appName,
+      title: openGraph?.title || defaultTitle,
       description: openGraph?.description || config.appDescription,
       url: openGraph?.url || `https://${config.domainName}/`,
       siteName: openGraph?.title || config.appName,
@@ -46,12 +48,12 @@ export const getSEOTags = ({
     },
 
     twitter: {
-      title: openGraph?.title || config.appName,
+      title: openGraph?.title || defaultTitle,
       description: openGraph?.description || config.appDescription,
       // If you add an twitter-image.(jpg|jpeg|png|gif) image to the /app folder, you don't need the code below
       // images: [openGraph?.image || defaults.og.image],
       card: "summary_large_image",
-      creator: "@marc_louvion",
+      creator: "@reeverify",
     },
 
     // If a canonical URL is given, we add it. The metadataBase will turn the relative URL into a fully qualified URL
@@ -85,7 +87,7 @@ export const renderSchemaTags = () => {
           url: `https://${config.domainName}/`,
           author: {
             "@type": "Person",
-            name: "Marc Lou",
+            name: "Reeverify Team",
           },
           datePublished: "2023-08-01",
           applicationCategory: "EducationalApplication",
