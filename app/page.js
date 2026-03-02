@@ -60,6 +60,24 @@ const intelCards = [
   },
 ];
 
+const useCases = [
+  {
+    title: "Re-verify \"Valid\" results from other tools",
+    description:
+      "Run Reeverify on addresses already marked as valid by legacy validators. In many lists, around 20% of these \"valid\" records are still unsafe to send. We isolate those hidden risks before launch to reduce real campaign bounce.",
+  },
+  {
+    title: "Recover value from catch-all segments",
+    description:
+      "Most traditional verifiers (like ZeroBounce or NeverBounce) label large portions of a list as catch-all, often 50% to 70%. Reeverify separates deliverable catch-all inboxes from undeliverable ones, so you can safely recover more usable leads.",
+  },
+  {
+    title: "Warm and enrich your outreach list",
+    description:
+      "Before first-touch outreach, Reeverify helps you identify contacts who are out of office, on leave, or no longer at the company. We can also surface successor contact signals, so your team reaches the right person faster and improves campaign outcomes.",
+  },
+];
+
 const faqItems = [
   {
     question: "Why does verification take 24 hours?",
@@ -115,6 +133,7 @@ export default function Page() {
             <a href="#gap" className="link link-hover">The Problem</a>
             <a href="#how" className="link link-hover">How it Works</a>
             <a href="#showdown" className="link link-hover">Showdown</a>
+            <a href="#use-cases" className="link link-hover">Use Cases</a>
             <a href="#intel" className="link link-hover">Intelligence</a>
             <a href="#pricing" className="link link-hover">Pricing</a>
           </nav>
@@ -391,6 +410,28 @@ export default function Page() {
                 <div key={item.title} className="rounded-3xl border border-white/10 p-8 transition hover:bg-white/5">
                   <h3 className="text-xl font-black italic tracking-tight text-primary">{item.title}</h3>
                   <p className="mt-3 text-sm text-neutral-content/70">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="use-cases" className="border-y border-base-300 bg-base-100 py-24">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="text-center">
+              <h2 className="text-4xl font-black italic leading-none md:text-5xl">
+                Reeverify Use Cases
+              </h2>
+              <p className="mt-4 text-base-content/65">
+                Three practical workflows teams use to reduce bounce and unlock more value from existing lists.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {useCases.map((item) => (
+                <div key={item.title} className="rounded-3xl border border-base-300 bg-base-200/40 p-8">
+                  <h3 className="text-2xl font-black italic tracking-tight text-base-content">{item.title}</h3>
+                  <p className="mt-4 text-base leading-relaxed text-base-content/70">{item.description}</p>
                 </div>
               ))}
             </div>

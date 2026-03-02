@@ -5,6 +5,57 @@ import { usePathname } from "next/navigation";
 import BrandLogo from "@/components/BrandLogo";
 import config from "@/config";
 
+const HomeIcon = ({ className = "w-4 h-4" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M3 10.5 12 3l9 7.5" />
+    <path d="M5 9.5V21h14V9.5" />
+  </svg>
+);
+
+const CheckListIcon = ({ className = "w-4 h-4" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="m9 11 2 2 4-4" />
+    <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9Z" />
+  </svg>
+);
+
+const CreditCardIcon = ({ className = "w-4 h-4" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <path d="M2 10h20" />
+  </svg>
+);
+
 const DashboardSidebar = () => {
   const pathname = usePathname();
 
@@ -19,28 +70,31 @@ const DashboardSidebar = () => {
       <nav className="flex-1 p-3 space-y-2">
         <Link
           href="/dashboard"
-          className={`btn btn-ghost justify-start w-full ${
+          className={`btn btn-ghost justify-start gap-2 w-full ${
             pathname === "/dashboard" ? "btn-active" : ""
           }`}
         >
+          <HomeIcon />
           Dashboard
         </Link>
 
         <Link
           href="/dashboard/validate"
-          className={`btn btn-ghost justify-start w-full ${
+          className={`btn btn-ghost justify-start gap-2 w-full ${
             pathname?.startsWith("/dashboard/validate") ? "btn-active" : ""
           }`}
         >
+          <CheckListIcon />
           Validate
         </Link>
 
         <Link
           href="/dashboard/plans"
-          className={`btn btn-ghost justify-start w-full ${
+          className={`btn btn-ghost justify-start gap-2 w-full ${
             pathname?.startsWith("/dashboard/plans") ? "btn-active" : ""
           }`}
         >
+          <CreditCardIcon />
           Pricing & Plans
         </Link>
       </nav>

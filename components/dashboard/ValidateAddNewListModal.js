@@ -944,8 +944,16 @@ export default function ValidateAddNewListModal({
             {step === 3 ? (
               <div className="space-y-4">
                 {!balance?.isSubscriptionActive ? (
-                  <div className="alert alert-warning">
-                    Subscription required. Please subscribe before uploading.
+                  <div className="alert alert-warning flex flex-wrap items-center gap-3">
+                    <span>Subscription required. Please subscribe before uploading.</span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-neutral"
+                      onClick={() => router.push("/dashboard/plans")}
+                      disabled={isSubmitting || isPreparingPurchase || isCreatingTopupCheckout}
+                    >
+                      Choose a plan
+                    </button>
                   </div>
                 ) : null}
 
