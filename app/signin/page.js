@@ -142,6 +142,18 @@ export default function Login() {
             Send Magic Link
           </button>
         </form>
+
+        <p className="text-center text-xs text-base-content/60 leading-relaxed">
+          By signing up, you agree to our{" "}
+          <Link href="/tos" className="link link-hover">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy-policy" className="link link-hover">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </main>
   );
