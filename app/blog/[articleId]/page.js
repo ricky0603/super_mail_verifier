@@ -15,7 +15,8 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const article = getBlogArticleBySlug(params.articleId);
+  const resolvedParams = await params;
+  const article = getBlogArticleBySlug(resolvedParams?.articleId);
 
   if (!article) {
     return getSEOTags();
@@ -47,7 +48,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function Article({ params }) {
-  const article = getBlogArticleBySlug(params.articleId);
+  const resolvedParams = await params;
+  const article = getBlogArticleBySlug(resolvedParams?.articleId);
   if (!article) {
     notFound();
   }
@@ -55,7 +57,7 @@ export default async function Article({ params }) {
   const articlesRelated = getBlogArticles()
     .filter(
       (a) =>
-        a.slug !== params.articleId &&
+        a.slug !== resolvedParams?.articleId &&
         a.categories.some((c) =>
           article.categories.map((c) => c.slug).includes(c.slug)
         )

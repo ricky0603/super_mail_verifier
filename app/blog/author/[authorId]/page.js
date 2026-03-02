@@ -7,7 +7,10 @@ import config from "@/config";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
-  const author = authors.find((author) => author.slug === params.authorId);
+  const resolvedParams = await params;
+  const author = authors.find(
+    (author) => author.slug === resolvedParams?.authorId
+  );
 
   if (!author) {
     return getSEOTags();
@@ -21,7 +24,10 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function Author({ params }) {
-  const author = authors.find((author) => author.slug === params.authorId);
+  const resolvedParams = await params;
+  const author = authors.find(
+    (author) => author.slug === resolvedParams?.authorId
+  );
   if (!author) {
     notFound();
   }

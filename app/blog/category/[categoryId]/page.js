@@ -7,8 +7,9 @@ import config from "@/config";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
   const category = categories.find(
-    (category) => category.slug === params.categoryId
+    (category) => category.slug === resolvedParams?.categoryId
   );
 
   if (!category) {
@@ -23,8 +24,9 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function Category({ params }) {
+  const resolvedParams = await params;
   const category = categories.find(
-    (category) => category.slug === params.categoryId
+    (category) => category.slug === resolvedParams?.categoryId
   );
   if (!category) {
     notFound();

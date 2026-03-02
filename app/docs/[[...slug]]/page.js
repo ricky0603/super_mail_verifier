@@ -7,8 +7,9 @@ export function generateStaticParams() {
   return source.generateParams();
 }
 
-export default function DocsPageRoute({ params }) {
-  const slugs = params?.slug ?? [];
+export default async function DocsPageRoute({ params }) {
+  const resolvedParams = await params;
+  const slugs = resolvedParams?.slug ?? [];
   const page = source.getPage(slugs);
 
   if (!page) {
