@@ -6,6 +6,7 @@ import config from "@/config";
 import "./globals.css";
 
 const GA_MEASUREMENT_ID = "G-ZQP0K724BY";
+const CLARITY_PROJECT_ID = "vpeaxdsgye";
 
 export const viewport = {
 	// Will use the primary color of your theme to show a nice theme color in the URL bar of supported browsers
@@ -42,6 +43,15 @@ export default function RootLayout({ children }) {
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', '${GA_MEASUREMENT_ID}');
+              `}
+            </Script>
+            <Script id="clarity-init" strategy="afterInteractive">
+              {`
+                (function(c,l,a,r,i,t,y){
+                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                })(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");
               `}
             </Script>
           </>
