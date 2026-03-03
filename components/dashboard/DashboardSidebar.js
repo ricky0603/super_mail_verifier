@@ -60,14 +60,14 @@ const DashboardSidebar = () => {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-base-300 bg-base-100 min-h-screen">
+    <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-base-300 bg-base-100 h-screen sticky top-0">
       <div className="h-16 flex items-center px-6 border-b border-base-300">
         <Link href="/dashboard" className="inline-flex items-center">
           <BrandLogo size="sm" />
         </Link>
       </div>
 
-      <nav className="flex-1 p-3 space-y-2">
+      <nav className="flex-1 overflow-y-auto p-3 space-y-2">
         <Link
           href="/dashboard"
           className={`btn btn-ghost justify-start gap-2 w-full ${
@@ -99,7 +99,7 @@ const DashboardSidebar = () => {
         </Link>
       </nav>
 
-      <div className="p-3 border-t border-base-300">
+      <div className="p-3 border-t border-base-300 bg-base-100">
         <a
           className="btn btn-outline w-full justify-center gap-2"
           href={`mailto:${config?.resend?.supportEmail || "support@reeverify.com"}?subject=${encodeURIComponent(

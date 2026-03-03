@@ -21,12 +21,12 @@ export default async function LayoutPrivate({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-base-200">
-      <div className="flex">
+    <div className="h-screen bg-base-200">
+      <div className="flex h-full overflow-hidden">
         <DashboardSidebar />
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
           <DashboardTopbar user={user} />
-          <main className="p-6 lg:p-8">{children}</main>
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
         </div>
       </div>
     </div>
