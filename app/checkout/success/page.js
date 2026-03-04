@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -9,7 +9,7 @@ import {
   trackEvent,
 } from "@/libs/analytics/ga4-client";
 
-const SuccessPage = () => {
+const SuccessPageContent = () => {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const source = searchParams.get("source") || "unknown";
@@ -134,4 +134,22 @@ const SuccessPage = () => {
   );
 };
 
-export default SuccessPage;
+const SuccessPageFallback = () => (
+  <main className="relative min-h-[75vh] overflow-hidden px-4 py-10 sm:px-6 sm:py-14">
+    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_20%,rgba(59,130,246,0.16),transparent_35%),radial-gradient(circle_at_85%_10%,rgba(16,185,129,0.16),transparent_32%),radial-gradient(circle_at_50%_100%,rgba(245,158,11,0.1),transparent_40%)]" />
+    <section className="relative mx-auto w-full max-w-2xl rounded-3xl border border-base-300/70 bg-base-100/95 p-6 shadow-2xl backdrop-blur sm:p-10">
+      <div className="flex items-center justify-center gap-3 text-sm text-base-content/70">
+        <span className="loading loading-spinner loading-sm" />
+        <span>Loading checkout status...</span>
+      </div>
+    </section>
+  </main>
+);
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<SuccessPageFallback />}>
+      <SuccessPageContent />
+    </Suspense>
+  );
+}
