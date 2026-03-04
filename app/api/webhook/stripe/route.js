@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { sendGa4EventServer } from "@/libs/analytics/ga4-server";
 import { requireServerEnv } from "@/libs/env";
 
 const getPlanCreditsByPriceId = (priceId) => {
@@ -52,6 +53,14 @@ const extractUserIdFromInvoice = (invoice) => {
     if (typeof userId === "string" && userId) return userId;
   }
   return null;
+};
+
+const resolveSubscriptionPurchaseEventName = (invoice) => {
+  // Stripe first subscription charge is usually `subscription_create`.
+  if (invoice?.billing_reason === "subscription_create") {
+    return "purchase_first_subscription";
+  }
+  return "purchase_subscription_renewal";
 };
 
 export async function POST(req) {
@@ -116,6 +125,7 @@ export async function POST(req) {
         const userId =
           subscription?.metadata?.user_id || extractUserIdFromInvoice(invoice);
         const customerId = subscription?.customer;
+        const gaClientId = subscription?.metadata?.ga_client_id || null;
         const items = subscription?.items?.data || [];
         const priceId = items?.[0]?.price?.id || null;
 
@@ -207,6 +217,31 @@ export async function POST(req) {
 
 				if (invoiceUpsertError) throw invoiceUpsertError;
 
+        await sendGa4EventServer({
+          clientId: gaClientId || undefined,
+          userId,
+          eventName: resolveSubscriptionPurchaseEventName(invoice),
+          params: {
+            transaction_id: invoiceId,
+            currency: (invoice?.currency || "usd").toUpperCase(),
+            value: Number.isFinite(invoice?.amount_paid)
+              ? Number(invoice.amount_paid) / 100
+              : undefined,
+            billing_reason: invoice?.billing_reason || undefined,
+            items: [
+              {
+                item_id: priceId,
+                item_name: "Subscription Plan",
+                item_category: "subscription",
+                quantity: 1,
+                ...(Number.isFinite(invoice?.amount_paid)
+                  ? { price: Number(invoice.amount_paid) / 100 }
+                  : {}),
+              },
+            ],
+          },
+        });
+
 				break;
 			}
 
@@ -217,6 +252,7 @@ export async function POST(req) {
         if (session?.mode !== "payment" || purpose !== "credit_topup") break;
 
         const userId = session?.metadata?.user_id;
+        const gaClientId = session?.metadata?.ga_client_id;
         const credits = Number(session?.metadata?.credits);
         const checkoutSessionId = session?.id;
 
@@ -265,6 +301,30 @@ export async function POST(req) {
           .eq("id", userId);
 
         if (updateError) throw updateError;
+
+        await sendGa4EventServer({
+          clientId: gaClientId || undefined,
+          userId,
+          eventName: "purchase_credit_topup",
+          params: {
+            transaction_id: checkoutSessionId,
+            currency: (session?.currency || "usd").toUpperCase(),
+            value: Number.isFinite(session?.amount_total)
+              ? Number(session.amount_total) / 100
+              : undefined,
+            items: [
+              {
+                item_id: session?.metadata?.source_price_id || "credit_topup",
+                item_name: "Credit Topup",
+                item_category: "credits",
+                quantity: Number.isFinite(credits) ? Math.floor(credits) : 1,
+                ...(Number.isFinite(session?.amount_total) && Number.isFinite(credits) && credits > 0
+                  ? { price: Number(session.amount_total) / 100 / Math.floor(credits) }
+                  : {}),
+              },
+            ],
+          },
+        });
 
         break;
       }

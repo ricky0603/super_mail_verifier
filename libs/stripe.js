@@ -21,6 +21,7 @@ export const createCheckout = async ({
   couponId,
   clientReferenceId,
   user,
+  metadata,
 }) => {
   const stripe = createStripeClient();
 
@@ -47,6 +48,9 @@ export const createCheckout = async ({
     sessionParams.subscription_data = {
       metadata: {
         user_id: String(clientReferenceId),
+        ...(metadata?.ga_client_id
+          ? { ga_client_id: String(metadata.ga_client_id) }
+          : {}),
       },
     };
   }
@@ -55,6 +59,7 @@ export const createCheckout = async ({
     mode,
     allow_promotion_codes: true,
     client_reference_id: clientReferenceId,
+    metadata: metadata || undefined,
     automatic_tax: { enabled: true },
     line_items: [
       {
@@ -75,7 +80,12 @@ export const createCheckout = async ({
     ...extraParams,
   });
 
-  return stripeSession.url;
+  return {
+    url: stripeSession.url,
+    id: stripeSession.id,
+    currency: stripeSession.currency || "usd",
+    amountTotal: stripeSession.amount_total,
+  };
 };
 
 const parseDecimal = (value) => {
@@ -223,7 +233,12 @@ export const createCreditTopupCheckout = async ({
     ...extraParams,
   });
 
-  return stripeSession.url;
+  return {
+    url: stripeSession.url,
+    id: stripeSession.id,
+    currency: stripeSession.currency || currency || "usd",
+    amountTotal: stripeSession.amount_total,
+  };
 };
 
 // This is used to create Customer Portal sessions, so users can manage their subscriptions (payment methods, cancel, etc..)

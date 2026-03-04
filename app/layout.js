@@ -5,8 +5,8 @@ import ClientLayout from "@/components/LayoutClient";
 import config from "@/config";
 import "./globals.css";
 
-const GA_MEASUREMENT_ID = "G-ZQP0K724BY";
-const CLARITY_PROJECT_ID = "vpeaxdsgye";
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
 
 export const viewport = {
 	// Will use the primary color of your theme to show a nice theme color in the URL bar of supported browsers
@@ -23,6 +23,10 @@ export const metadata = getSEOTags({
 
 export default function RootLayout({ children }) {
   const isProduction = process.env.NODE_ENV === "production";
+  const enableGaInDev = process.env.NEXT_PUBLIC_GA_IN_DEV === "true";
+  const shouldLoadGa =
+    Boolean(GA_MEASUREMENT_ID) && (isProduction || enableGaInDev);
+  const shouldLoadClarity = isProduction && Boolean(CLARITY_PROJECT_ID);
 
 	return (
 		<html
@@ -31,7 +35,7 @@ export default function RootLayout({ children }) {
 			suppressHydrationWarning
 		>
 			<body className="flex min-h-screen flex-col">
-        {isProduction ? (
+        {shouldLoadGa ? (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -42,9 +46,25 @@ export default function RootLayout({ children }) {
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${GA_MEASUREMENT_ID}');
+                gtag('consent', 'default', {
+                  ad_storage: 'granted',
+                  analytics_storage: 'granted',
+                  ad_user_data: 'granted',
+                  ad_personalization: 'granted'
+                });
+                gtag('set', 'allow_google_signals', true);
+                gtag('set', 'allow_ad_personalization_signals', true);
+                gtag('set', 'ads_data_redaction', false);
+                gtag('config', '${GA_MEASUREMENT_ID}', {
+                  debug_mode: ${!isProduction},
+                  allow_google_signals: true,
+                  allow_ad_personalization_signals: true
+                });
               `}
             </Script>
+          </>
+        ) : null}
+        {shouldLoadClarity ? (
             <Script id="clarity-init" strategy="afterInteractive">
               {`
                 (function(c,l,a,r,i,t,y){
@@ -54,7 +74,6 @@ export default function RootLayout({ children }) {
                 })(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");
               `}
             </Script>
-          </>
         ) : null}
 				<RootProvider>
 					{/* ClientLayout contains all the client wrappers (Crisp chat support, toast messages, tooltips, etc.) */}

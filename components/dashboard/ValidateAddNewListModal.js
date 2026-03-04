@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
 import toast from "react-hot-toast";
 import { createClient } from "@/libs/supabase/client";
+import { getGaClientId } from "@/libs/analytics/ga4-client";
 import { useRouter } from "next/navigation";
 
 const STORAGE_BUCKET = "email_list_sourcefile";
@@ -547,13 +548,15 @@ export default function ValidateAddNewListModal({
   const createTopupCheckout = async () => {
     setIsCreatingTopupCheckout(true);
     try {
+      const gaClientId = getGaClientId();
       const res = await fetch("/api/stripe/create-credit-topup-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           requiredCredits,
-          successUrl: window.location.href,
+          successUrl: `${window.location.origin}/checkout/success?source=topup&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: window.location.href,
+          gaClientId,
         }),
       });
 

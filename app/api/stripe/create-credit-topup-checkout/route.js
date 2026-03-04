@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/libs/supabase/server";
 import config from "@/config";
+import { sendGa4EventServer } from "@/libs/analytics/ga4-server";
+import { getGaSessionIdFromRequestCookie, resolveGaClientId } from "@/libs/analytics/ga4-request";
 import { createCreditTopupCheckout } from "@/libs/stripe";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +31,11 @@ export async function POST(req) {
     const requiredCredits = Number(body?.requiredCredits);
     const successUrl = typeof body?.successUrl === "string" ? body.successUrl : "";
     const cancelUrl = typeof body?.cancelUrl === "string" ? body.cancelUrl : "";
+    const { clientId: gaClientId } = resolveGaClientId({
+      req,
+      bodyValue: body?.gaClientId,
+    });
+    const gaSessionId = getGaSessionIdFromRequestCookie(req);
 
     if (!Number.isFinite(requiredCredits) || requiredCredits <= 0) {
       return NextResponse.json(
@@ -86,7 +93,7 @@ export async function POST(req) {
       );
     }
 
-    const url = await createCreditTopupCheckout({
+    const stripeSession = await createCreditTopupCheckout({
       priceId,
       quantity: shortage,
       successUrl,
@@ -100,10 +107,37 @@ export async function POST(req) {
         purpose: "credit_topup",
         user_id: String(user.id),
         credits: String(shortage),
+        ...(gaClientId ? { ga_client_id: gaClientId } : {}),
       },
     });
 
-    return NextResponse.json({ url, shortage });
+    const amountFromSession = Number.isFinite(stripeSession?.amountTotal)
+      ? Number(stripeSession.amountTotal) / 100
+      : undefined;
+    const topupItem = {
+      item_id: priceId,
+      item_name: Number.isFinite(shortage)
+        ? `Credit Topup (${Math.floor(shortage)} credits)`
+        : "Credit Topup",
+      item_category: "credits",
+      quantity: 1,
+      ...(Number.isFinite(amountFromSession) ? { price: amountFromSession } : {}),
+    };
+
+    await sendGa4EventServer({
+      clientId: gaClientId,
+      userId: user.id,
+      eventName: "begin_checkout",
+      params: {
+        currency: (stripeSession?.currency || "usd").toUpperCase(),
+        value: amountFromSession,
+        items: [topupItem],
+        session_id: gaSessionId,
+        engagement_time_msec: 100,
+      },
+    });
+
+    return NextResponse.json({ url: stripeSession?.url, shortage });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: e?.message }, { status: 500 });

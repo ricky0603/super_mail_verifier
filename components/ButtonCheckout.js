@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import apiClient from "@/libs/api";
+import { getGaClientId } from "@/libs/analytics/ga4-client";
 import config from "@/config";
 
 // This component is used to create Stripe Checkout Sessions
@@ -21,11 +22,14 @@ const ButtonCheckout = ({
     setIsLoading(true);
 
     try {
+      const gaClientId = getGaClientId();
+      const successUrl = `${window.location.origin}/checkout/success?source=sub&session_id={CHECKOUT_SESSION_ID}`;
       const res = await apiClient.post("/stripe/create-checkout", {
         priceId,
         mode,
-        successUrl: window.location.href,
+        successUrl,
         cancelUrl: window.location.href,
+        gaClientId,
       });
 
       window.location.href = res.url;
