@@ -14,6 +14,7 @@ export const getSEOTags = ({
   extraTags,
 } = {}) => {
   const defaultTitle = `${config.appName} - The Ultimate Email Verification Solution`;
+  const siteName = openGraph?.siteName || config.appName;
 
   return {
     // up to 50 characters (what does your app do for the user?) > your main should be here
@@ -34,7 +35,7 @@ export const getSEOTags = ({
       title: openGraph?.title || defaultTitle,
       description: openGraph?.description || config.appDescription,
       url: openGraph?.url || `https://${config.domainName}/`,
-      siteName: openGraph?.title || config.appName,
+      siteName,
       // If you add an opengraph-image.(jpg|jpeg|png|gif) image to the /app folder, you don't need the code below
       // images: [
       //   {
@@ -54,6 +55,14 @@ export const getSEOTags = ({
       // images: [openGraph?.image || defaults.og.image],
       card: "summary_large_image",
       creator: "@reeverify",
+    },
+    icons: {
+      icon: [
+        { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+        { url: "/favicon.ico", sizes: "any" },
+      ],
+      shortcut: ["/favicon.ico"],
+      apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
     },
 
     // If a canonical URL is given, we add it. The metadataBase will turn the relative URL into a fully qualified URL

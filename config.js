@@ -1,6 +1,8 @@
 const config = {
   // REQUIRED
   appName: "Reeverify",
+  // Optional alternate site name for Google Search site-name selection.
+  siteAlternateName: "ReeVerify",
   // REQUIRED: a short description of your app for SEO tags (can be overwritten)
   appDescription:
     "Reeverify helps you verify emails with real-send probing, reduce bounce risk, and uncover actionable signals before outreach.",

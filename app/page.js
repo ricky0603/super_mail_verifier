@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import ButtonSignin from "@/components/ButtonSignin";
 import BrandLogo from "@/components/BrandLogo";
+import config from "@/config";
 
 const pricingPlans = [
   {
@@ -120,9 +121,21 @@ const compatibleLogos = [
   { name: "Apollo", src: "/compatible/apollo.png", width: 202, height: 52 },
 ];
 
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: config.appName,
+  alternateName: config.siteAlternateName,
+  url: `https://${config.domainName}/`,
+};
+
 export default function Page() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
       <header className="sticky top-0 z-50 border-b border-base-300/80 bg-base-100/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
