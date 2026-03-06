@@ -63,6 +63,31 @@ const resolveSubscriptionPurchaseEventName = (invoice) => {
   return "purchase_subscription_renewal";
 };
 
+const isFirstSubscriptionPurchase = (invoice) =>
+  invoice?.billing_reason === "subscription_create";
+
+const buildSubscriptionPurchaseParams = ({ invoice, priceId }) => {
+  const amountPaid = Number.isFinite(invoice?.amount_paid)
+    ? Number(invoice.amount_paid) / 100
+    : undefined;
+
+  return {
+    transaction_id: invoice?.id || undefined,
+    currency: (invoice?.currency || "usd").toUpperCase(),
+    value: amountPaid,
+    billing_reason: invoice?.billing_reason || undefined,
+    items: [
+      {
+        item_id: priceId,
+        item_name: "Subscription Plan",
+        item_category: "subscription",
+        quantity: 1,
+        ...(Number.isFinite(amountPaid) ? { price: amountPaid } : {}),
+      },
+    ],
+  };
+};
+
 export async function POST(req) {
   const stripe = new Stripe(requireServerEnv("STRIPE_SECRET_KEY"), {
     apiVersion: "2023-08-16",
@@ -217,30 +242,26 @@ export async function POST(req) {
 
 				if (invoiceUpsertError) throw invoiceUpsertError;
 
+        const purchaseParams = buildSubscriptionPurchaseParams({
+          invoice,
+          priceId,
+        });
+
         await sendGa4EventServer({
           clientId: gaClientId || undefined,
           userId,
           eventName: resolveSubscriptionPurchaseEventName(invoice),
-          params: {
-            transaction_id: invoiceId,
-            currency: (invoice?.currency || "usd").toUpperCase(),
-            value: Number.isFinite(invoice?.amount_paid)
-              ? Number(invoice.amount_paid) / 100
-              : undefined,
-            billing_reason: invoice?.billing_reason || undefined,
-            items: [
-              {
-                item_id: priceId,
-                item_name: "Subscription Plan",
-                item_category: "subscription",
-                quantity: 1,
-                ...(Number.isFinite(invoice?.amount_paid)
-                  ? { price: Number(invoice.amount_paid) / 100 }
-                  : {}),
-              },
-            ],
-          },
+          params: purchaseParams,
         });
+
+        if (isFirstSubscriptionPurchase(invoice)) {
+          await sendGa4EventServer({
+            clientId: gaClientId || undefined,
+            userId,
+            eventName: "purchase",
+            params: purchaseParams,
+          });
+        }
 
 				break;
 			}
