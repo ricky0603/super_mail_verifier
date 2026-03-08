@@ -186,12 +186,10 @@ export default function Page() {
             </p>
 
             <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-              <a
-                href="#pricing"
-                className="btn btn-primary btn-lg rounded-full px-12 font-black italic text-neutral"
-              >
-                Verify Now
-              </a>
+              <ButtonSignin
+                text="Verify Now"
+                extraStyle="btn-primary btn-lg rounded-full px-12 font-black italic text-neutral"
+              />
             </div>
 
             <div className="mx-auto mt-14 max-w-2xl overflow-hidden rounded-2xl border-2 border-neutral bg-white p-4 text-left shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
