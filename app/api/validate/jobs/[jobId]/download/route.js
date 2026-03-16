@@ -1,5 +1,6 @@
 import Papa from "papaparse";
 import { NextResponse } from "next/server";
+import { getPapaParseFatalError } from "@/libs/csv";
 import { createClient } from "@/libs/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -182,9 +183,10 @@ export async function GET(req, { params } = {}) {
       dynamicTyping: false,
     });
 
-    if (parsed?.errors?.length) {
+    const fatalError = getPapaParseFatalError(parsed?.errors);
+    if (fatalError) {
       return NextResponse.json(
-        { error: parsed.errors[0]?.message || "CSV parse failed" },
+        { error: fatalError.message || "CSV parse failed" },
         { status: 400 }
       );
     }

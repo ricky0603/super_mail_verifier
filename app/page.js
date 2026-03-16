@@ -188,6 +188,8 @@ export default function Page() {
             <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
               <ButtonSignin
                 text="Verify Now"
+                authenticatedText="Verify Now"
+                showAccountInfoWhenAuthenticated={false}
                 extraStyle="btn-primary btn-lg rounded-full px-12 font-black italic text-neutral"
               />
             </div>

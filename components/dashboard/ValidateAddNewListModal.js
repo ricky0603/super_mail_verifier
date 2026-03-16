@@ -5,6 +5,7 @@ import Papa from "papaparse";
 import toast from "react-hot-toast";
 import { createClient } from "@/libs/supabase/client";
 import { getGaClientId } from "@/libs/analytics/ga4-client";
+import { getPapaParseFatalError } from "@/libs/csv";
 import { useRouter } from "next/navigation";
 
 const STORAGE_BUCKET = "email_list_sourcefile";
@@ -104,11 +105,19 @@ const parsePreview = async ({ file }) => {
       skipEmptyLines: "greedy",
       preview: PREVIEW_ROWS + 1,
       complete: (results) => {
-        if (results?.errors?.length) {
-          reject(new Error(results.errors[0]?.message || "Failed to parse CSV."));
+        const fatalError = getPapaParseFatalError(results?.errors);
+        if (fatalError) {
+          reject(new Error(fatalError.message || "Failed to parse CSV."));
           return;
         }
-        resolve(results.data || []);
+
+        const rows = Array.isArray(results?.data) ? results.data : [];
+        if (!rows.length) {
+          reject(new Error("The CSV file is empty."));
+          return;
+        }
+
+        resolve(rows);
       },
       error: (err) => reject(err),
     });
@@ -257,11 +266,19 @@ export default function ValidateAddNewListModal({
       return;
     }
 
+    setStep(1);
     setFile(nextFile);
+    setPreviewRows([]);
+    setColumnNames([]);
+    setSelectedColumnIndex(0);
+    setRequiredCredits(0);
+    setUniqueEmailList([]);
+    setTopupQuote({ unitPriceUsd: null, totalPriceUsd: null, currency: "usd" });
+    didInitSelectionRef.current = false;
   };
 
   const loadPreview = async ({ nextHasHeader, source, currentSelectedColumnIndex }) => {
-    if (!file) return;
+    if (!file) return false;
     setIsParsingPreview(true);
     try {
       const rows = await parsePreview({ file });
@@ -287,9 +304,11 @@ export default function ValidateAddNewListModal({
         );
         setSelectedColumnIndex(clamped);
       }
+      return true;
     } catch (e) {
       console.error(e);
       toast.error(e?.message || "Failed to parse preview.");
+      return false;
     } finally {
       setIsParsingPreview(false);
     }
@@ -301,8 +320,13 @@ export default function ValidateAddNewListModal({
         toast.error("Please choose a CSV file first.");
         return;
       }
-      setStep(2);
-      await loadPreview({ nextHasHeader: hasHeader, source: "initial" });
+      const previewLoaded = await loadPreview({
+        nextHasHeader: hasHeader,
+        source: "initial",
+      });
+      if (previewLoaded) {
+        setStep(2);
+      }
       return;
     }
 
@@ -1058,9 +1082,13 @@ export default function ValidateAddNewListModal({
                 <button
                   className="btn btn-primary"
                   onClick={goNext}
-                  disabled={!file || isSubmitting}
+                  disabled={!file || isSubmitting || isParsingPreview}
                 >
-                  Next
+                  {isParsingPreview ? (
+                    <span className="loading loading-spinner loading-sm" />
+                  ) : (
+                    "Next"
+                  )}
                 </button>
               ) : step === 2 ? (
                 <button
