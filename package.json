@@ -16,6 +16,7 @@
     "@fontsource/inter": "^5.2.8",
     "@headlessui/react": "^2.2.9",
     "@opennextjs/cloudflare": "^1.16.3",
+    "@sentry/nextjs": "^10.45.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.1",
     "axios": "^1.13.2",
