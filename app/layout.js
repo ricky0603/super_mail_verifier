@@ -67,11 +67,36 @@ export default function RootLayout({ children }) {
         {shouldLoadClarity ? (
             <Script id="clarity-init" strategy="afterInteractive">
               {`
-                (function(c,l,a,r,i,t,y){
-                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-                })(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");
+                (function(c, d, name, projectId) {
+                  if (!projectId) return;
+
+                  var clarity = c[name];
+                  if (clarity && clarity.__reeverifyInitialized) return;
+
+                  clarity =
+                    clarity ||
+                    function() {
+                      (clarity.q = clarity.q || []).push(arguments);
+                    };
+
+                  clarity.__reeverifyInitialized = true;
+                  c[name] = clarity;
+
+                  var existing = d.querySelector(
+                    'script[data-clarity-project-id="' + projectId + '"]'
+                  );
+                  if (existing) return;
+
+                  var script = d.createElement("script");
+                  script.async = true;
+                  script.src = "https://www.clarity.ms/tag/" + projectId;
+                  script.setAttribute("data-clarity-project-id", projectId);
+
+                  var parent = d.head || d.body || d.documentElement;
+                  if (parent) {
+                    parent.appendChild(script);
+                  }
+                })(window, document, "clarity", "${CLARITY_PROJECT_ID}");
               `}
             </Script>
         ) : null}
