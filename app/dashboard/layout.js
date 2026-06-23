@@ -21,7 +21,7 @@ export default async function LayoutPrivate({ children }) {
   }
 
   return (
-    <div className="h-screen bg-base-200">
+    <div className="h-screen bg-base-200 text-base-content">
       <div className="flex h-full overflow-hidden">
         <DashboardSidebar />
         <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">

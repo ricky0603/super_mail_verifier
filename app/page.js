@@ -1,124 +1,129 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Space_Grotesk, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import ButtonSignin from "@/components/ButtonSignin";
 import BrandLogo from "@/components/BrandLogo";
+import Reveal from "@/components/landing/Reveal";
+import FaqList from "@/components/landing/FaqList";
 import config from "@/config";
+import "./landing.css";
 
-const pricingPlans = [
+// Fonts for the landing page, exposed to landing.css as CSS variables.
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plus-jakarta",
+  display: "swap",
+});
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+/* ─── DATA ─── */
+const STATS = [
+  { num: "10min", label: "to deliver first results", accent: true },
+  { num: "24h", label: "continuous monitoring & updates" },
+  { num: "0", label: "risk to your domain reputation" },
+];
+
+const STEPS = [
+  {
+    n: "1",
+    t: "Upload your catch-all list",
+    d: "Export the “catch-all / unknown” rows from ZeroBounce, Hunter, or Apollo. Drop the CSV in — that’s the whole setup.",
+  },
+  {
+    n: "2",
+    t: "We send real test emails",
+    d: "Isolated probing infrastructure — fully separate from your domain — delivers to each address and watches for bounces over 24 hours.",
+  },
+  {
+    n: "3",
+    t: "Get a clean Safe / Bounce list",
+    d: "Download a verified CSV and push the safe contacts straight into your sequences. No bounce risk to your sender reputation.",
+  },
+];
+
+const PLANS = [
   {
     name: "Starter",
-    credits: "500 credits / month",
-    creditPrice: "$0.0980 per credit",
     price: "$49",
+    per: "/mo",
+    credits: "500 credits",
+    unit: "$0.098 / verification",
+    feats: ["Catch-all recovery", "Real-send probing", "24h bounce monitoring", "CSV upload & export"],
     featured: false,
-    ctaText: "get start",
-    ctaHref: "/signin",
+    cta: "Start recovering",
   },
   {
     name: "Growth",
-    credits: "3,000 credits / month",
-    creditPrice: "$0.0497 per credit",
     price: "$149",
+    per: "/mo",
+    credits: "3,000 credits",
+    unit: "$0.050 / verification",
+    feats: ["Everything in Starter", "API access", "Priority processing", "Webhook results"],
     featured: true,
-    ctaText: "get start",
-    ctaHref: "/signin",
+    cta: "Start recovering",
   },
   {
     name: "Scale",
-    credits: "12,000 credits / month",
-    creditPrice: "$0.0333 per credit",
     price: "$399",
+    per: "/mo",
+    credits: "12,000 credits",
+    unit: "$0.033 / verification",
+    feats: ["Everything in Growth", "Volume discounts", "Dedicated support", "SLA guarantee"],
     featured: false,
-    ctaText: "get start",
-    ctaHref: "/signin",
+    cta: "Start recovering",
   },
   {
     name: "Enterprise",
-    credits: "Custom credits",
-    creditPrice: "Custom per-credit pricing",
     price: "Custom",
+    per: "",
+    credits: "Custom volume",
+    unit: "Volume pricing",
+    feats: ["Custom integrations", "Dedicated strategist", "Security review", "All Scale features"],
     featured: false,
-    ctaText: "contact us",
-    ctaHref: "mailto:support@reeverify.com",
+    cta: "Contact sales",
   },
 ];
 
-const intelCards = [
+const FAQS = [
   {
-    title: "Referral Discovery",
-    description:
-      "If a prospect left the company, we extract the successor contact automatically so you get an exclusive lead.",
+    q: "What exactly is a catch-all email?",
+    a: "A catch-all domain accepts mail to any address — even ones that don't exist. Standard verifiers can't tell a real inbox from a fake one, so they mark the whole domain as risky and tell you not to send. Reeverify sidesteps the guesswork by actually delivering a test message and watching the result for a full 24 hours.",
   },
   {
-    title: "OOO Optimization",
-    description:
-      "We detect out-of-office auto-replies and provide the best date to follow up for stronger response rates.",
+    q: "Does this put my sending domain at risk?",
+    a: "No. We send from our own isolated probing infrastructure — completely separate from your domain, IPs, and sender identity. Your reputation is never touched. You only ever receive back a clean list of Safe or Bounce results.",
   },
   {
-    title: "Resignation Alerts",
-    description:
-      "Detect inboxes no longer monitored and stop paying your outreach stack for contacts that are gone.",
-  },
-];
-
-const useCases = [
-  {
-    title: "Re-verify \"Valid\" results from other tools",
-    description:
-      "Run Reeverify on addresses already marked as valid by legacy validators. In many lists, around 20% of these \"valid\" records are still unsafe to send. We isolate those hidden risks before launch to reduce real campaign bounce.",
+    q: "Why does verification take 24 hours?",
+    a: "Many bounces are asynchronous: the receiving server accepts the message at first, then returns a bounce notification hours later. We monitor a full 24-hour cycle to catch those delayed signals that instant SMTP checks miss entirely.",
   },
   {
-    title: "Recover value from catch-all segments",
-    description:
-      "Most traditional verifiers (like ZeroBounce or NeverBounce) label large portions of a list as catch-all, often 50% to 70%. Reeverify separates deliverable catch-all inboxes from undeliverable ones, so you can safely recover more usable leads.",
+    q: "How do credits work?",
+    a: "1 credit = 1 email verified, whatever the result. Credits refresh monthly with your plan. Since every recovered catch-all is a contact you already paid to acquire, the credit cost typically pays for itself on the first send.",
   },
   {
-    title: "Warm and enrich your outreach list",
-    description:
-      "Before first-touch outreach, Reeverify helps you identify contacts who are out of office, on leave, or no longer at the company. We can also surface successor contact signals, so your team reaches the right person faster and improves campaign outcomes.",
+    q: "How is this different from ZeroBounce or Hunter?",
+    a: "Those tools use static SMTP handshakes and simply can't confirm catch-all domains. Reeverify uses real-send probing with 24-hour monitoring and is built to run after your first verification pass — recovering the leads static tools are forced to discard.",
   },
-];
-
-const faqItems = [
-  {
-    question: "Why does verification take 24 hours?",
-    answer:
-      "Because we are not guessing. To catch asynchronous bounces, we monitor cluster feedback loops for a full 24-hour cycle.",
-  },
-  {
-    question: "What should I use Reeverify for?",
-    answer:
-      "Use Reeverify to re-check addresses that other tools marked as Valid or catch-all, or simply run Reeverify on your entire email list directly. Instead of relying on static checks, we use real-send probing to verify deliverability behavior in live conditions. In many lists, we identify roughly 20% of \"Valid\" records as actually unsafe to send, and we can usually recover around 30% to 50% deliverable addresses from catch-all segments.",
-  },
-  {
-    question: "How do credits work for email verification?",
-    answer:
-      "Email verification consumes credits. Each verified email address costs 1 credit, regardless of the final result (Safe, Bounce, or any other outcome).",
-  },
-  {
-    question: "How is this safer than my own SMTP tool?",
-    answer:
-      "Reeverify uses isolated probing clusters with no connection to your own domains. We absorb the bounce risk, not your sender identity.",
-  },
-  {
-    question: "What is the difference between Reeverify and ZeroBounce-type tools?",
-    answer:
-      "Traditional tools like ZeroBounce rely on static checks (SMTP handshake, historical data, pattern rules) and can still label risky emails as valid. Reeverify uses dynamic real-send probing and 24-hour signal monitoring to classify each address by actual delivery behavior, then returns SAFE or BOUNCE with actionable reply intelligence.",
-  },
-];
-
-const compatibleTools = [
-  { name: "Clay", logo: "/compatible/clay.png" },
-  { name: "Instantly", logo: "/compatible/instantly.svg" },
-  { name: "Smartlead", logo: "/compatible/smartlead.svg" },
-  { name: "Apollo", logo: "/compatible/apollo.png" },
 ];
 
 const compatibleLogos = [
   { name: "Clay", src: "/compatible/clay.png", width: 126, height: 40 },
   { name: "Instantly", src: "/compatible/instantly.svg", width: 143, height: 32 },
   { name: "Smartlead", src: "/compatible/smartlead.svg", width: 189, height: 41 },
-  { name: "Apollo", src: "/compatible/apollo.png", width: 202, height: 52 },
+  { name: "Apollo", src: "/compatible/apollo.png", width: 202, height: 52, tall: true },
 ];
 
 const websiteSchema = {
@@ -129,6 +134,424 @@ const websiteSchema = {
   url: `https://${config.domainName}/`,
 };
 
+/* ─── ICONS ─── */
+function Check() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+/* ─── HERO DEMO (catch-all flows through Reeverify, splits Safe / Bounce) ─── */
+function HeroDemo() {
+  const safeSet = new Set([0, 3, 5, 8]);
+  const dots = [];
+  for (let i = 0; i < 10; i++) {
+    const safe = safeSet.has(i);
+    const pathId = safe ? "#v4-safe" : "#v4-bounce";
+    const endColor = safe ? "#16a34a" : "#e2433b";
+    const delay = `${(i * 0.44).toFixed(2)}s`;
+    dots.push(
+      <circle key={i} r="5.5" fill="#FFD400" opacity="0">
+        <animateMotion dur="4.2s" repeatCount="indefinite" begin={delay}>
+          <mpath href={pathId} />
+        </animateMotion>
+        <animate
+          attributeName="opacity"
+          values="0;1;1;1;0"
+          keyTimes="0;0.07;0.5;0.9;1"
+          dur="4.2s"
+          repeatCount="indefinite"
+          begin={delay}
+        />
+        <animate
+          attributeName="fill"
+          values={`#FFD400;#FFD400;${endColor};${endColor}`}
+          keyTimes="0;0.44;0.58;1"
+          dur="4.2s"
+          repeatCount="indefinite"
+          begin={delay}
+        />
+      </circle>
+    );
+  }
+
+  return (
+    <div className="demo-frame">
+      <div className="demo-bar">
+        <span className="d r"></span>
+        <span className="d y"></span>
+        <span className="d g"></span>
+        <span className="t">app.reeverify.com — Recovery</span>
+        <span className="live">
+          <span className="pulse"></span>verifying
+        </span>
+      </div>
+      <div className="demo-body">
+        <svg viewBox="0 0 500 230" className="pf-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="5,000 addresses marked catch-all flow through Reeverify and split into 2,100 safe-to-send and 2,900 bounce-risk.">
+          <defs>
+            <path id="v4-safe" d="M 110 115 L 276 115 C 312 100 352 40 400 31" />
+            <path id="v4-bounce" d="M 110 115 L 276 115 C 312 130 352 190 400 199" />
+            <pattern id="v4-grid" width="22" height="22" patternUnits="userSpaceOnUse">
+              <path d="M 22 0 L 0 0 0 22" fill="none" stroke="rgba(20,20,20,0.04)" strokeWidth="1" />
+            </pattern>
+          </defs>
+
+          <rect width="500" height="230" fill="url(#v4-grid)" />
+
+          {/* connectors — one uniform dotted line, stopping at each module's edge */}
+          <g stroke="rgba(20,20,20,0.12)" strokeWidth="1.5" strokeDasharray="1 5" strokeLinecap="round" fill="none">
+            <path d="M 110 115 L 196 115" />
+            <path d="M 276 115 C 312 100 352 40 400 31" />
+            <path d="M 276 115 C 312 130 352 190 400 199" />
+          </g>
+
+          {/* input card */}
+          <g>
+            <rect x="10" y="89" width="96" height="52" rx="11" fill="#fff" stroke="rgba(20,20,20,0.1)" strokeWidth="1" />
+            <text x="58" y="112" textAnchor="middle" className="pf-mono" fontWeight="700" fontSize="17" fill="#18181b">5,000</text>
+            <text x="58" y="129" textAnchor="middle" fontSize="9" fill="#9a9a9a">marked catch-all</text>
+          </g>
+
+          {/* safe output */}
+          <g>
+            <rect x="400" y="8" width="92" height="46" rx="11" fill="#16a34a" fillOpacity="0.08" stroke="#16a34a" strokeOpacity="0.3" strokeWidth="1" />
+            <text x="446" y="30" textAnchor="middle" className="pf-mono" fontWeight="700" fontSize="16" fill="#16a34a">2,100</text>
+            <text x="446" y="45" textAnchor="middle" fontSize="9.5" fill="#16a34a" opacity="0.85">Safe to send ✓</text>
+          </g>
+
+          {/* bounce output */}
+          <g>
+            <rect x="400" y="176" width="92" height="46" rx="11" fill="#e2433b" fillOpacity="0.06" stroke="#e2433b" strokeOpacity="0.28" strokeWidth="1" />
+            <text x="446" y="198" textAnchor="middle" className="pf-mono" fontWeight="700" fontSize="16" fill="#e2433b">2,900</text>
+            <text x="446" y="213" textAnchor="middle" fontSize="9.5" fill="#e2433b" opacity="0.8">Confirmed bounce</text>
+          </g>
+
+          {dots}
+
+          {/* gate — drawn last so dots pass behind it */}
+          <g>
+            <rect x="196" y="96" width="80" height="38" rx="11" fill="#FFD400" />
+            <text x="236" y="120" textAnchor="middle" className="pf-display" fill="#1a1600" fontSize="9.5" fontWeight="700" letterSpacing="0.5">REEVERIFY</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SECTIONS ─── */
+function Header() {
+  return (
+    <header className="site-header">
+      <div className="wrap header-inner">
+        <Link href="/" className="brand-mark" aria-label="Reeverify home">
+          <BrandLogo size="sm" />
+        </Link>
+        <nav className="header-nav">
+          <a href="#how">How it works</a>
+          <a href="#proof">Why it works</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <ButtonSignin text="Get started" extraStyle="btn-brand btn-sm" />
+      </div>
+    </header>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="hero" id="top">
+      <div className="wrap hero-inner">
+        <div className="hero-stagger">
+          <div className="hero-badge">
+            <span className="dot"></span> Built for cold-outreach agencies &amp; growth teams
+          </div>
+          <h1 className="dsp">
+            Send to <span className="kw">50% more contacts</span> from the list you already paid for.
+          </h1>
+          <p className="hero-sub">
+            Other verifiers flag <span className="kw">catch-all</span> addresses as unsendable.
+            Reeverify proves which ones are actually safe — without ever touching your domain.
+          </p>
+          <div className="hero-cta">
+            <ButtonSignin
+              text="Recover my leads →"
+              authenticatedText="Recover my leads →"
+              showAccountInfoWhenAuthenticated={false}
+              extraStyle="btn-brand btn-lg"
+            />
+            <a href="#how" className="btn btn-ghost-line btn-lg">
+              See how it works
+            </a>
+          </div>
+          <div className="hero-trust">
+            <span>
+              <Check /> Zero risk to your sending domain
+            </span>
+            <span>
+              <Check /> Results in 10 min, monitored 24 h
+            </span>
+            <span>
+              <Check /> Recover ~50% of catch-alls
+            </span>
+          </div>
+        </div>
+
+        <div className="hero-demo-wrap">
+          <HeroDemo />
+        </div>
+
+        <div className="logos">
+          <div className="logos-label">Slots into the stack you already run</div>
+          <div className="logos-row">
+            {compatibleLogos.map((logo) => (
+              <Image
+                key={logo.name}
+                src={logo.src}
+                alt={logo.name}
+                width={logo.width}
+                height={logo.height}
+                className={logo.tall ? "tall" : undefined}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatBand() {
+  return (
+    <section className="section-sm">
+      <div className="wrap">
+        <Reveal>
+          <div className="statband">
+            {STATS.map((s) => (
+              <div className="stat" key={s.num}>
+                <div className="stat-num">{s.accent ? <span className="accent">{s.num}</span> : s.num}</div>
+                <div className="stat-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function How() {
+  return (
+    <section className="section" id="how">
+      <div className="wrap">
+        <Reveal>
+          <div className="section-head">
+            <span className="eyebrow">How it works</span>
+            <h2 className="dsp section-title">Three steps. Zero risk to your domain.</h2>
+            <p className="section-sub">
+              Reeverify runs after your normal verification pass and recovers the leads it had to throw away.
+            </p>
+          </div>
+        </Reveal>
+        <Reveal>
+          <div className="how-steps">
+            {STEPS.map((s) => (
+              <div className="how-step" key={s.n}>
+                <div className="how-step-num">{s.n}</div>
+                <h3>{s.t}</h3>
+                <p>{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Proof() {
+  return (
+    <section className="section bg-alt" id="proof">
+      <div className="wrap">
+        <Reveal>
+          <div className="section-head">
+            <span className="eyebrow">Why it works</span>
+            <h2 className="dsp section-title">Static checks guess. We actually deliver.</h2>
+            <p className="section-sub">
+              A real send tells you the truth a handshake never can — and that truth is worth about 42% of
+              every catch-all batch.
+            </p>
+          </div>
+        </Reveal>
+        <Reveal>
+          <div className="compare">
+            <div className="cmp old">
+              <div className="cmp-tag">ZeroBounce · Hunter · static verifiers</div>
+              <h4>Static SMTP handshake</h4>
+              <p>Can&apos;t distinguish a real inbox from a catch-all, so it flags the whole batch “do not send.”</p>
+              <div className="cmp-bignum">0% recovered</div>
+              <div className="cmp-bar">
+                <i></i>
+              </div>
+            </div>
+            <div className="cmp new">
+              <div className="cmp-tag">Reeverify · real-send probing</div>
+              <h4>Real delivery + 24h monitoring</h4>
+              <p>Sends an isolated test to each address and watches for delayed bounces — confirming which ones are genuinely safe.</p>
+              <div className="cmp-bignum">~42% recovered</div>
+              <div className="cmp-bar">
+                <i></i>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Testimonial() {
+  return (
+    <section className="section">
+      <div className="wrap">
+        <Reveal>
+          <div className="quote-card">
+            <div className="quote-mark">“</div>
+            <p className="quote-text">
+              After ZeroBounce, 40–50% of our list came back catch-all — leads we&apos;d already paid for.
+              Since adding Reeverify we recover nearly half of them as verified-safe. More volume, fewer
+              bounces, far less wasted spend.
+            </p>
+            <div className="quote-author">
+              <div className="quote-avatar">RC</div>
+              <div>
+                <div className="quote-name">Founder, Refund Cat</div>
+                <div className="quote-role">Cold outreach &amp; lead generation</div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Pricing() {
+  return (
+    <section className="section bg-alt" id="pricing">
+      <div className="wrap">
+        <Reveal>
+          <div className="section-head">
+            <span className="eyebrow">Pricing</span>
+            <h2 className="dsp section-title">Credit-based. Every recovered lead pays for itself.</h2>
+            <p className="section-sub">1 credit = 1 email verified. No seats, no setup fees, cancel anytime.</p>
+          </div>
+        </Reveal>
+        <Reveal>
+          <div className="pricing">
+            {PLANS.map((p) => (
+              <div className={`plan ${p.featured ? "feat" : ""}`} key={p.name}>
+                {p.featured && <div className="plan-pop">Most popular</div>}
+                <div className="plan-name">{p.name}</div>
+                <div className="plan-price">
+                  {p.price}
+                  <span className="per">{p.per}</span>
+                </div>
+                <div className="plan-credits">{p.credits}</div>
+                <div className="plan-unit">{p.unit}</div>
+                <ul className="plan-feats">
+                  {p.feats.map((f) => (
+                    <li key={f}>
+                      <Check />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                {p.name === "Enterprise" ? (
+                  <a href="mailto:support@reeverify.com" className="btn btn-ghost-line">
+                    {p.cta}
+                  </a>
+                ) : (
+                  <ButtonSignin
+                    text={p.cta}
+                    showAccountInfoWhenAuthenticated={false}
+                    extraStyle={p.featured ? "btn-brand" : "btn-ghost-line"}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function FAQ() {
+  return (
+    <section className="section" id="faq">
+      <div className="wrap">
+        <Reveal>
+          <div className="section-head">
+            <span className="eyebrow">FAQ</span>
+            <h2 className="dsp section-title">Questions, answered.</h2>
+          </div>
+        </Reveal>
+        <Reveal>
+          <FaqList items={FAQS} />
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function FinalCTA() {
+  return (
+    <section className="section-sm">
+      <div className="wrap">
+        <Reveal>
+          <div className="cta-band">
+            <h2>
+              Stop deleting leads you already paid for. <span className="kw">Recover them today.</span>
+            </h2>
+            <p>Upload a catch-all list and see your recovery rate within 24 hours.</p>
+            <ButtonSignin
+              text="Get started →"
+              authenticatedText="Get started →"
+              showAccountInfoWhenAuthenticated={false}
+              extraStyle="btn-brand btn-lg"
+            />
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <div className="wrap footer-inner">
+        <Link href="/" className="brand-mark" aria-label="Reeverify home">
+          <BrandLogo size="sm" />
+        </Link>
+        <nav className="footer-links">
+          <a href="#how">How it works</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+          <Link href="/tos">Terms</Link>
+          <Link href="/privacy-policy">Privacy</Link>
+          <a href="mailto:support@reeverify.com">Support</a>
+        </nav>
+        <div className="footer-copy">© {new Date().getFullYear()} Reeverify</div>
+      </div>
+    </footer>
+  );
+}
+
 export default function Page() {
   return (
     <>
@@ -136,470 +559,20 @@ export default function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
       />
-      <header className="sticky top-0 z-50 border-b border-base-300/80 bg-base-100/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <BrandLogo size="sm" />
-          </Link>
-
-          <nav className="hidden items-center gap-6 text-xs font-bold lg:flex">
-            <a href="#gap" className="link link-hover">The Problem</a>
-            <a href="#how" className="link link-hover">How it Works</a>
-            <a href="#showdown" className="link link-hover">Showdown</a>
-            <a href="#use-cases" className="link link-hover">Use Cases</a>
-            <a href="#intel" className="link link-hover">Intelligence</a>
-            <a href="#pricing" className="link link-hover">Pricing</a>
-          </nav>
-
-          <ButtonSignin text="Get Started" extraStyle="btn-primary btn-sm lg:btn-md" />
-        </div>
-      </header>
-
-      <main>
-        <section className="relative overflow-hidden bg-base-100 py-24 lg:py-32">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-60"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 2px 2px, color-mix(in oklab, var(--color-base-content) 10%, transparent) 1px, transparent 0)",
-              backgroundSize: "40px 40px",
-            }}
-          />
-          <div className="relative mx-auto max-w-5xl px-6 text-center lg:px-8">
-            <div className="badge gap-2 border-none bg-error px-5 py-4 font-black italic text-white">
-              Stop trusting fake &quot;valid&quot; results
-            </div>
-
-            <h1 className="mt-8 text-5xl font-black italic leading-[0.9] tracking-tighter md:text-7xl lg:text-8xl">
-              Tired of &quot;Valid&quot;
-              <br />
-              <span className="inline-block -rotate-1 rounded bg-neutral px-4 text-primary">
-                Emails Bouncing?
-              </span>
-            </h1>
-
-            <p className="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-base-content/70 md:text-2xl">
-              Legacy tools <span className="line-through decoration-error decoration-4">lie to you</span>.
-              They mark emails as valid, but can still bounce. Reeverify uses
-              <span className="font-bold text-base-content"> Real-Send Probing</span> to catch the
-              bounces they miss before you launch.
-            </p>
-
-            <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-              <ButtonSignin
-                text="Verify Now"
-                authenticatedText="Verify Now"
-                showAccountInfoWhenAuthenticated={false}
-                extraStyle="btn-primary btn-lg rounded-full px-12 font-black italic text-neutral"
-              />
-            </div>
-
-            <div className="mx-auto mt-14 max-w-2xl overflow-hidden rounded-2xl border-2 border-neutral bg-white p-4 text-left shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
-              <div className="mb-4 flex items-center gap-2 border-b border-base-300 pb-2">
-                <div className="h-3 w-3 rounded-full bg-error" />
-                <div className="h-3 w-3 rounded-full bg-warning" />
-                <div className="h-3 w-3 rounded-full bg-success" />
-                <span className="ml-2 text-xs font-mono italic opacity-40">
-                  Live Comparison Engine
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <div className="mb-1 text-[10px] font-bold uppercase text-slate-400">Legacy Verifier</div>
-                  <div className="flex items-center gap-2">
-                    <span className="truncate font-mono text-sm text-slate-700">ceo@target.com</span>
-                    <span className="badge badge-success badge-xs p-1 text-[8px] font-bold">VALID</span>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border-2 border-primary bg-neutral p-3 text-white">
-                  <div className="mb-1">
-                    <BrandLogo size="sm" dark />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="truncate font-mono text-sm">ceo@target.com</span>
-                    <span className="badge badge-error badge-xs p-1 text-[8px] font-bold">BOUNCE</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 text-[11px] font-bold italic text-error">
-                We caught an invalid email that legacy validators missed.
-              </div>
-            </div>
-
-            <p className="mt-12 text-sm font-bold tracking-widest opacity-60">
-              Compatible with your workflow
-            </p>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {compatibleLogos.map((logo) => (
-                <div
-                  key={logo.name}
-                  className="flex h-16 items-center justify-center rounded-xl border border-base-300 bg-base-200/40 px-3"
-                >
-                  <Image
-                    src={logo.src}
-                    alt={`${logo.name} logo`}
-                    width={logo.width}
-                    height={logo.height}
-                    className="h-8 w-auto object-contain opacity-80"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="gap" className="border-y border-base-300 bg-base-100 py-24">
-          <div className="mx-auto grid max-w-6xl gap-16 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
-            <div>
-              <h2 className="text-4xl font-black italic leading-none md:text-5xl">
-                Why do verified lists still <span className="text-error">bounce</span>
-              </h2>
-              <div className="mt-8 space-y-5 text-lg text-base-content/70">
-                <p>
-                  Legacy tools like ZeroBounce or Hunter ask servers if an email exists and trust the response.
-                </p>
-                <p className="rounded-xl border-l-4 border-error bg-base-200 p-4">
-                  <b>The trap:</b> enterprise firewalls often say yes to almost everything to defend against mining.
-                </p>
-                <p>
-                  Campaign send time reveals the truth: hard bounces, damaged reputation, and lower inbox placement.
-                </p>
-              </div>
-            </div>
-
-            <div className="mockup-window border bg-neutral shadow-2xl">
-              <div className="space-y-2 bg-neutral p-6 font-mono text-sm text-neutral-content">
-                <div className="text-neutral-content/40">{`// PROBING: marketing@fortune500.com`}</div>
-                <div className="text-success">Step 1: SMTP Ping... SUCCESS (server lied)</div>
-                <div className="text-warning">Step 2: Database Check... RECORD VALID</div>
-                <div className="mt-4 animate-pulse font-bold text-error">! REALITY CHECK: EMAIL DOES NOT EXIST</div>
-                <div className="italic text-neutral-content/60">
-                  Standard tools would mark this as safe. We mark it dead.
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="how" className="bg-base-200 py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-5xl font-black italic tracking-tighter">Real-Send Testing Logic</h2>
-              <p className="mt-4 text-xl text-base-content/60">We take the bullet so your domain does not have to.</p>
-            </div>
-
-            <div className="mt-16 grid gap-10 md:grid-cols-3">
-              <div className="text-center">
-                <div className="mx-auto mb-7 flex h-20 w-20 rotate-3 items-center justify-center rounded-3xl bg-primary text-3xl font-black text-neutral shadow-xl">
-                  01
-                </div>
-                <h3 className="text-2xl font-black italic">Import Lists</h3>
-                <p className="mt-3 text-base-content/65">
-                  Sync valid, catch-all, and risky segments from your lead source.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="mx-auto mb-7 flex h-20 w-20 -rotate-3 items-center justify-center rounded-3xl bg-neutral text-3xl font-black text-primary shadow-xl">
-                  02
-                </div>
-                <h3 className="text-2xl font-black italic">Distributed Probing</h3>
-                <p className="mt-3 text-base-content/65">
-                  Sender clusters simulate real delivery and monitor bounce, OOO, and firewall behavior for 24h.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="mx-auto mb-7 flex h-20 w-20 rotate-6 items-center justify-center rounded-3xl bg-primary text-3xl font-black text-neutral shadow-xl">
-                  03
-                </div>
-                <h3 className="text-2xl font-black italic">100% Valid CSV</h3>
-                <p className="mt-3 text-base-content/65">Export contacts physically capable of receiving email.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="showdown" className="bg-base-100 py-24">
-          <div className="mx-auto max-w-5xl px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-4xl font-black italic">The Truth: Case Study #842</h2>
-              <p className="mt-2 text-base-content/60">
-                3,746 emails marked as valid by legacy tools.
-              </p>
-            </div>
-
-            <div className="relative mt-12 grid gap-6 md:grid-cols-2 md:gap-8">
-              <div className="card border-2 border-base-300 bg-base-100 p-8">
-                <div className="mb-6 flex items-start justify-between">
-                  <span className="text-sm font-black opacity-40">Legacy tools</span>
-                  <span className="text-2xl font-black text-error">✕</span>
-                </div>
-                <div className="py-8 text-center">
-                  <p className="font-mono text-base-content/50">Result for &quot;Valid&quot; segment:</p>
-                  <p className="mt-2 text-3xl font-black text-success">VALID (Guess)</p>
-                  <div className="divider">Actual Outcome</div>
-                  <p className="text-5xl font-black text-error">12.5% 😱</p>
-                  <p className="mt-2 text-sm font-bold">Hard bounce rate</p>
-                </div>
-              </div>
-
-              <div className="card scale-[1.02] border-4 border-primary bg-neutral p-8 text-neutral-content shadow-2xl">
-                <div className="mb-6 flex items-start justify-between">
-                  <BrandLogo size="sm" dark />
-                  <span className="text-2xl font-black text-success">✓</span>
-                </div>
-                <div className="py-8 text-center">
-                  <p className="font-mono text-neutral-content/50">Result for &quot;Valid&quot; segment:</p>
-                  <p className="mt-2 text-3xl font-black text-primary">Safe or Bounce</p>
-                  <div className="divider opacity-20">Actual Outcome</div>
-                  <p className="text-5xl font-black text-success">0.0% 😎</p>
-                  <p className="mt-2 text-sm font-bold text-primary">Bounce rate guaranteed</p>
-                </div>
-              </div>
-
-              <div className="pointer-events-none absolute left-1/2 top-1/2 hidden h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-base-100 bg-primary font-black text-neutral md:flex">
-                VS
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-base-100 py-24">
-          <div className="mx-auto max-w-5xl px-6 lg:px-8">
-            <h2 className="mb-10 text-center text-3xl font-black italic">Reality vs. Illusion</h2>
-            <div className="overflow-x-auto rounded-3xl bg-base-100 shadow-xl">
-              <table className="table table-lg">
-                <thead className="bg-neutral text-neutral-content">
-                  <tr>
-                    <th>Verification Factor</th>
-                    <th className="text-center">Legacy Static Tools</th>
-                    <th className="text-center text-primary">Reeverify (Dynamic)</th>
-                  </tr>
-                </thead>
-                <tbody className="font-bold">
-                  <tr>
-                    <td>Actual Accuracy</td>
-                    <td className="text-center text-error">40% - 60%</td>
-                    <td className="text-center text-success">99.9%</td>
-                  </tr>
-                  <tr>
-                    <td>Detection Method</td>
-                    <td className="text-center font-normal opacity-50">SMTP Handshake (Guessing)</td>
-                    <td className="text-center">Real-Send Probing (Physical Path)</td>
-                  </tr>
-                  <tr>
-                    <td>Domain Reputation Safety</td>
-                    <td className="text-center text-warning">Medium Risk</td>
-                    <td className="text-center text-success">Zero Risk</td>
-                  </tr>
-                  <tr>
-                    <td>Extra Signals</td>
-                    <td className="text-center text-error">No</td>
-                    <td className="text-center text-success">
-                      Out of office, resigned, autoreply and referrals
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <section id="intel" className="bg-neutral py-24 text-neutral-content">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-4xl font-black italic leading-none md:text-5xl">
-                Verification is for saving.
-                <br />
-                <span className="text-primary underline decoration-wavy">Intelligence is for earning.</span>
-              </h2>
-              <p className="mt-4 text-neutral-content/65">Our probing engine extracts data static tools cannot see.</p>
-            </div>
-
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {intelCards.map((item) => (
-                <div key={item.title} className="rounded-3xl border border-white/10 p-8 transition hover:bg-white/5">
-                  <h3 className="text-xl font-black italic tracking-tight text-primary">{item.title}</h3>
-                  <p className="mt-3 text-sm text-neutral-content/70">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="use-cases" className="border-y border-base-300 bg-base-100 py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-4xl font-black italic leading-none md:text-5xl">
-                Reeverify Use Cases
-              </h2>
-              <p className="mt-4 text-base-content/65">
-                Three practical workflows teams use to reduce bounce and unlock more value from existing lists.
-              </p>
-            </div>
-
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {useCases.map((item) => (
-                <div key={item.title} className="rounded-3xl border border-base-300 bg-base-200/40 p-8">
-                  <h3 className="text-2xl font-black italic tracking-tight text-base-content">{item.title}</h3>
-                  <p className="mt-4 text-base leading-relaxed text-base-content/70">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-t border-base-300 bg-base-200 py-24">
-          <div className="mx-auto max-w-5xl px-6 text-center lg:px-8">
-            <h2 className="text-3xl font-black italic">Built for the Modern Outreach Stack</h2>
-            <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-              {compatibleTools.map((tool) => (
-                <div
-                  key={tool.name}
-                  className="rounded-xl bg-base-100 p-6 shadow-sm flex flex-col items-center justify-center gap-3"
-                >
-                  <div className="relative h-12 w-40">
-                    <Image
-                      src={tool.logo}
-                      alt={`${tool.name} logo`}
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-10 font-bold text-base-content/60">14,000,000+ Emails Probed. 850,000+ Bounces Blocked.</p>
-          </div>
-        </section>
-
-        <section id="pricing" className="bg-base-100 py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-4xl font-black italic leading-none md:text-5xl">Pick a plan based on your growth</h2>
-              <p className="mt-4 text-base-content/65">
-                Every verification consumes 1 credit. Choose the plan that matches your monthly list size.
-              </p>
-            </div>
-
-            <div className="mt-12 grid gap-6 lg:grid-cols-4">
-              {pricingPlans.map((plan) => (
-                <div
-                  key={plan.name}
-                  className={`relative flex h-full flex-col rounded-3xl border-2 p-8 ${
-                    plan.featured
-                      ? "border-neutral bg-neutral text-neutral-content shadow-2xl"
-                      : "border-base-300 bg-base-100 shadow-sm"
-                  }`}
-                >
-                  {plan.featured && (
-                    <div className="badge badge-primary absolute -top-3 left-8 font-black italic">Most popular</div>
-                  )}
-
-                  <p className={`text-sm font-bold tracking-wide ${plan.featured ? "text-primary" : "text-base-content/60"}`}>
-                    {plan.name.toUpperCase()}
-                  </p>
-                  <div className="mt-3 flex items-end gap-2">
-                    <span className="text-5xl font-black">{plan.price}</span>
-                    {plan.name !== "Enterprise" && (
-                      <span className={`mb-1 text-2xl font-bold ${plan.featured ? "text-neutral-content/70" : "text-base-content/50"}`}>
-                        /month
-                      </span>
-                    )}
-                  </div>
-                  <p className={`mt-2 text-sm ${plan.featured ? "text-neutral-content/70" : "text-base-content/60"}`}>
-                    {plan.credits}
-                  </p>
-                  <p className={`mt-1 text-xs font-semibold ${plan.featured ? "text-primary" : "text-base-content/50"}`}>
-                    {plan.creditPrice}
-                  </p>
-
-                  <ul className={`mt-8 flex-1 space-y-3 text-base ${plan.featured ? "text-neutral-content/90" : "text-base-content/80"}`}>
-                    {(plan.name === "Enterprise"
-                      ? [
-                          "Custom credits volume and pricing",
-                          "Custom data integrations",
-                          "Custom verification strategy",
-                          "All other features from other packages",
-                        ]
-                      : [
-                          plan.credits,
-                          "Verified via real-send probing",
-                          "Autoreply detection",
-                          "Catch-all recovery",
-                          "CSV upload and export",
-                          ...(plan.name === "Starter" ? [] : ["API access"]),
-                        ]).map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <span className={`mt-0.5 text-sm font-black ${plan.featured ? "text-primary" : "text-success"}`}>✓</span>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <a
-                    href={plan.ctaHref}
-                    className={`btn mt-8 w-full rounded-xl border-none text-base font-black ${
-                      plan.featured ? "btn-primary text-neutral" : "bg-neutral text-neutral-content hover:bg-neutral/90"
-                    }`}
-                  >
-                    {plan.ctaText}
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-base-200 py-24">
-          <div className="mx-auto max-w-3xl px-6 lg:px-8">
-            <h2 className="mb-10 text-center text-3xl font-black italic">Technical Intelligence</h2>
-            <div className="join join-vertical w-full overflow-hidden rounded-3xl bg-base-100 shadow-lg">
-              {faqItems.map((item, index) => (
-                <div key={item.question} className="collapse collapse-arrow join-item border border-base-300">
-                  <input type="radio" name="faq-acc" defaultChecked={index === 0} />
-                  <div className="collapse-title text-xl font-bold italic tracking-tight">{item.question}</div>
-                  <div className="collapse-content text-base-content/65">
-                    <p>{item.answer}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="footer footer-center rounded-t-[3rem] bg-neutral p-16 text-neutral-content lg:p-20">
-        <div className="max-w-2xl text-center">
-          <h2 className="text-4xl font-black italic leading-none text-white md:text-6xl">
-            Start scaling with <span className="font-extrabold text-primary">zero risk</span> email list
-          </h2>
-          <a href="/signin" className="btn btn-primary btn-lg mt-8 mb-12 rounded-full px-14 font-black italic text-neutral">
-            Create Free Account
-          </a>
-
-          <BrandLogo size="md" dark className="justify-center" />
-          <p className="mt-4 text-xs opacity-50">The Ultimate email verification solution</p>
-
-          <nav className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs font-semibold tracking-[0.12em] text-neutral-content/70">
-            <Link href="/tos" className="link link-hover">
-              Terms of Service
-            </Link>
-            <Link href="/privacy-policy" className="link link-hover">
-              Privacy Policy
-            </Link>
-            <a href="mailto:support@reeverify.com" className="link link-hover">
-              Support
-            </a>
-          </nav>
-
-          <p className="mt-6 text-xs text-neutral-content/45">
-            Copyright © {new Date().getFullYear()} Reeverify. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <div className={`site ${spaceGrotesk.variable} ${plusJakarta.variable} ${jetbrainsMono.variable}`}>
+        <Header />
+        <main>
+          <Hero />
+          <StatBand />
+          <How />
+          <Proof />
+          <Testimonial />
+          <Pricing />
+          <FAQ />
+          <FinalCTA />
+        </main>
+        <Footer />
+      </div>
     </>
   );
 }
